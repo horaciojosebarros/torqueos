@@ -1,0 +1,64 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+<nav class="navbar navbar-expand-lg navbar-dark"
+	style="background: #1E1E1E;">
+	<div class="container-fluid">
+		<a class="navbar-brand fw-bold"
+			href="${pageContext.request.contextPath}/">TorqueOS</a> <span
+			class="navbar-text d-none d-lg-inline"
+			style="color: #A7D7B5; font-weight: 600;"> Controle total da
+			sua oficina </span>
+
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+			data-bs-target="#navbarTorque" aria-controls="navbarTorque"
+			aria-expanded="false" aria-label="Menu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarTorque">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-1">
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/ordens">Ordens</a></li>
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/clientes">Clientes</a></li>
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/veiculos">Veículos</a></li>
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/pecas">Peças/Produtos</a></li>
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/servicos">Serviços</a></li>
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/assinatura">Assinatura</a></li>
+				<li class="nav-item"><a class="nav-link"
+					href="${pageContext.request.contextPath}/pagamentos">Pagamentos</a></li>
+
+				<c:if test="${sessionScope.ROLE == 'SUPERADMIN'}">
+					<li class="nav-item"><a class="nav-link"
+						href="${pageContext.request.contextPath}/admin/empresas">Empresas</a></li>
+				</c:if>
+				<c:if
+					test="${sessionScope.ROLE == 'ADMIN' || sessionScope.ROLE == 'SUPERADMIN'}">
+					<li class="nav-item"><a class="nav-link"
+						href="${pageContext.request.contextPath}/usuarios">Usuários</a></li>
+					<li class="nav-item"><a class="nav-link"
+						href="${pageContext.request.contextPath}/planos">Planos</a></li>
+				</c:if>
+
+				<li class="nav-item dropdown"><a
+					class="nav-link dropdown-toggle" href="#" role="button"
+					data-bs-toggle="dropdown" aria-expanded="false"> <c:out
+							value="${sessionScope.USER_NOME}" /> (<c:out
+							value="${sessionScope.ROLE}" />)
+				</a>
+					<ul class="dropdown-menu dropdown-menu-end">
+						<li><span class="dropdown-item-text">Empresa: <b><c:out
+										value="${sessionScope.EMPRESA_ID != null ? sessionScope.EMPRESA_ID : '(não selecionada)'}" /></b></span></li>
+						<li><hr class="dropdown-divider" /></li>
+						<li><a class="dropdown-item"
+							href="${pageContext.request.contextPath}/auth/logout">Sair</a></li>
+					</ul></li>
+			</ul>
+		</div>
+	</div>
+</nav>

@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="UTF-8">
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TorqueOS — Controle total da sua oficina</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:0;color:#1E1E1E}
+    header{padding:28px 18px;background:#1E1E1E;color:#fff}
+    .brand{display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto}
+    .brand img{width:52px;height:52px}
+    .brand h1{font-size:28px;margin:0}
+    .brand p{margin:4px 0 0;color:#FFB27A}
+    main{max-width:1100px;margin:0 auto;padding:28px 18px}
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:start}
+    .card{border:1px solid #eee;border-radius:14px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+    .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}
+    .btn.primary{background:#FF6A00;color:#fff}
+    .btn.ghost{border:1px solid #FF6A00;color:#FF6A00}
+    ul{margin:10px 0 0;padding-left:18px}
+    footer{padding:18px;text-align:center;color:#777}
+    @media(max-width:900px){.hero{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/assets/torqueos-logo.png" alt="TorqueOS"/>
+    <div>
+      <h1>TorqueOS</h1>
+      <p>Controle total da sua oficina.</p>
+    </div>
+  </div>
+  
+</header>
+<main>
+  <section class="hero">
+    <div class="card">
+      <h2>Seu SaaS de oficina, pronto para crescer</h2>
+      <p>Multiempresa, usuários por empresa, planos, assinatura, pagamentos e permissões — tudo já estruturado.</p>
+      <ul>
+        <li>Ordem de Serviço completa (itens, serviços, peças)</li>
+        <li>Clientes e veículos</li>
+        <li>Usuários e papéis (ADMIN/OPERADOR)</li>
+        <li>SUPERADMIN global para administrar empresas</li>
+        <li>Planos e cobrança por assinatura</li>
+      </ul>
+      <div class="cta">
+        <a class="btn primary" href="/auth/login">Entrar no sistema</a>
+        <a class="btn ghost" href="/admin/empresas">Área SUPERADMIN</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Planos sugeridos</h2>
+      <p><b>TorqueOS Start</b> — para oficinas pequenas</p>
+      <p><b>TorqueOS Pro</b> — para operação completa</p>
+      <p><b>TorqueOS Fleet</b> — foco em frotas (evolução)</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0"/>
+      <p style="margin:0;color:#555">Quer vender? Use a proposta em PDF em <code>/docs</code>.</p>
+    </div>
+  </section>
+</main>
+<footer>
+  <b>TorqueOS</b> — Controle total da sua oficina.
+</footer>
+</body>
+</html>
