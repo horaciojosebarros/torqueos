@@ -17,16 +17,16 @@ services:
       timeout: 3s
       retries: 30
 
-  app:
-    build: .
-    container_name: torqueos-app
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "8080:8080"
+ # app:
+ #   build: .
+ #   container_name: torqueos-app
+ #   depends_on:
+ #     db:
+ #       condition: service_healthy
+ #   environment:
+ #     SPRING_PROFILES_ACTIVE: docker
+ #   ports:
+ #     - "8080:8080"
 
 volumes:
   torqueos_pgdata:

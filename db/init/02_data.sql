@@ -6,10 +6,10 @@ INSERT INTO planos (nome, preco_mensal, limite_usuarios, limite_os_mes, ativo) V
 
 -- Assinatura inicial por empresa
 INSERT INTO assinaturas (id_empresa, id_plano, status, data_inicio, proximo_ciclo, gateway_ref)
-VALUES (1, 1, 'ATIVA', CURRENT_DATE, DATEADD('MONTH', 1, CURRENT_DATE), 'DEMO-EMP1');
+VALUES (1, 1, 'ATIVA', CURRENT_DATE, '2026-01-02', 'DEMO-EMP1');
 
 INSERT INTO assinaturas (id_empresa, id_plano, status, data_inicio, proximo_ciclo, gateway_ref)
-VALUES (2, 2, 'ATIVA', CURRENT_DATE, DATEADD('MONTH', 1, CURRENT_DATE), 'DEMO-EMP2');
+VALUES (2, 2, 'ATIVA', CURRENT_DATE, '2026-01-02', 'DEMO-EMP2');
 
 -- Usuários (senha: 123)
 INSERT INTO usuarios (id_empresa, nome, email, senha_hash, role, ativo)
