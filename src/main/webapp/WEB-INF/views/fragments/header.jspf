@@ -18,6 +18,9 @@
 
 		<div class="collapse navbar-collapse" id="navbarTorque">
 			<ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-1">
+			<li class="nav-item">
+			<a class="nav-link" href="${pageContext.request.contextPath}/agendamentos">Agendamentos</a>
+			</li>
 				<li class="nav-item"><a class="nav-link"
 					href="${pageContext.request.contextPath}/ordens">Ordens</a></li>
 				<li class="nav-item"><a class="nav-link"

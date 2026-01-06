@@ -75,4 +75,10 @@ public class UsuarioService {
 		repo.deleteByIdUsuarioAndIdEmpresa(id, TenantContext.getEmpresaId());
 	}
 
+	public Object findall() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 }
