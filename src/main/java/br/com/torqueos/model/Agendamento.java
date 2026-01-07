@@ -15,9 +15,8 @@ public class Agendamento {
   @Column(name = "id_empresa", nullable = false)
   private Long idEmpresa;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "id_usuario_responsavel", nullable = false)
-  private Usuario usuarioResponsavel;
+  @Column(name = "id_usuario_responsavel")
+  private Long usuarioResponsavel;
 
   @Column(nullable = false)
   private LocalDateTime inicio;
@@ -43,9 +42,12 @@ public class Agendamento {
   public Long getIdEmpresa() { return idEmpresa; }
   public void setIdEmpresa(Long idEmpresa) { this.idEmpresa = idEmpresa; }
 
-  public Usuario getUsuarioResponsavel() { return usuarioResponsavel; }
-  public void setUsuarioResponsavel(Usuario usuarioResponsavel) { this.usuarioResponsavel = usuarioResponsavel; }
-
+  public Long getUsuarioResponsavel() {
+	return usuarioResponsavel;
+}
+  public void setUsuarioResponsavel(Long usuarioResponsavel) {
+	this.usuarioResponsavel = usuarioResponsavel;
+  }
   public LocalDateTime getInicio() { return inicio; }
   public void setInicio(LocalDateTime inicio) { this.inicio = inicio; }
 

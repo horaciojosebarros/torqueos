@@ -12,86 +12,90 @@ import java.util.List;
 @Service
 public class AgendamentoService {
 
-  private final AgendamentoRepository repo;
-  private final UsuarioService usuarioService;
-  private final AssinaturaService assinaturaService;
+	private final AgendamentoRepository repo;
+	private final UsuarioService usuarioService;
+	private final AssinaturaService assinaturaService;
 
-  public AgendamentoService(AgendamentoRepository repo, UsuarioService usuarioService, AssinaturaService assinaturaService) {
-    this.repo = repo;
-    this.usuarioService = usuarioService;
-    this.assinaturaService = assinaturaService;
-  }
+	public AgendamentoService(AgendamentoRepository repo, UsuarioService usuarioService,
+			AssinaturaService assinaturaService) {
+		this.repo = repo;
+		this.usuarioService = usuarioService;
+		this.assinaturaService = assinaturaService;
+	}
 
-  public List<Agendamento> findAll() {
-    return repo.findByIdEmpresaOrderByInicioDesc(TenantContext.getEmpresaId());
-  }
+	public List<Agendamento> findAll() {
+		return repo.findByIdEmpresaOrderByInicioDesc(TenantContext.getEmpresaId());
+	}
 
-  public Agendamento findById(Long id) {
-    return repo.findByIdAgendamentoAndIdEmpresa(id, TenantContext.getEmpresaId())
-        .orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + id));
-  }
+	public List<Agendamento> findFrom(LocalDateTime inicioMin) {
+		return repo.findByIdEmpresaAndInicioGreaterThanEqualOrderByInicioAsc(TenantContext.getEmpresaId(), inicioMin);
+	}
 
-  public Agendamento create(Agendamento a, Long idUsuarioResponsavel) {
-    assinaturaService.validarAssinaturaAtiva();
+	public Agendamento findById(Long id) {
+		return repo.findByIdAgendamentoAndIdEmpresa(id, TenantContext.getEmpresaId())
+				.orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + id));
+	}
 
-    Long emp = TenantContext.getEmpresaId();
-    if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
+	public Agendamento create(Agendamento a, Long idUsuarioResponsavel) {
+		assinaturaService.validarAssinaturaAtiva();
 
-    if (idUsuarioResponsavel == null) throw new RuntimeException("Responsável é obrigatório.");
-    Usuario u = usuarioService.findById(idUsuarioResponsavel); // se não tiver, crie esse alias no UsuarioService
+		Long emp = TenantContext.getEmpresaId();
+		if (emp == null)
+			throw new RuntimeException("Tenant não definido (empresaId).");
 
-    if (a.getInicio() == null) throw new RuntimeException("Data/hora inicial é obrigatória.");
-    if (a.getDuracaoMinutos() == null || a.getDuracaoMinutos() <= 0) a.setDuracaoMinutos(60);
-    if (a.getStatus() == null || a.getStatus().trim().isEmpty()) a.setStatus("AGENDADO");
+		if (a.getInicio() == null)
+			throw new RuntimeException("Data/hora inicial é obrigatória.");
+		if (a.getDuracaoMinutos() == null || a.getDuracaoMinutos() <= 0)
+			a.setDuracaoMinutos(60);
+		if (a.getStatus() == null || a.getStatus().trim().isEmpty())
+			a.setStatus("AGENDADO");
 
-    // opcional: bloquear agendamento no passado
-    // if (a.getInicio().isBefore(LocalDateTime.now())) throw new RuntimeException("Agendamento deve ser no futuro.");
+		a.setUsuarioResponsavel(null);
 
-    // opcional: conflito
-    LocalDateTime fimNovo = a.getInicio().plusMinutes(a.getDuracaoMinutos());
-    boolean conflito = repo.existeConflito(emp, u.getIdUsuario(), a.getInicio(), fimNovo, null);
-    if (conflito) throw new RuntimeException("Conflito de horário para o responsável no intervalo informado.");
+		a.setIdEmpresa(emp);
+		a.setCriadoEm(LocalDateTime.now());
+		a.setAtualizadoEm(LocalDateTime.now());
 
-    a.setIdEmpresa(emp);
-    a.setUsuarioResponsavel(u);
-    a.setCriadoEm(LocalDateTime.now());
-    a.setAtualizadoEm(LocalDateTime.now());
+		return repo.save(a);
+	}
 
-    return repo.save(a);
-  }
+	public Agendamento update(Long id, Agendamento novo, Long idUsuarioResponsavel) {
+		assinaturaService.validarAssinaturaAtiva();
 
-  public Agendamento update(Long id, Agendamento novo, Long idUsuarioResponsavel) {
-    assinaturaService.validarAssinaturaAtiva();
+		Long emp = TenantContext.getEmpresaId();
+		if (emp == null)
+			throw new RuntimeException("Tenant não definido (empresaId).");
 
-    Agendamento a = findById(id);
+		Agendamento a = findById(id);
 
-    if (idUsuarioResponsavel == null) throw new RuntimeException("Responsável é obrigatório.");
-    Usuario u = usuarioService.findById(idUsuarioResponsavel);
+		if (novo.getInicio() == null)
+			throw new RuntimeException("Data/hora inicial é obrigatória.");
+		Integer dur = (novo.getDuracaoMinutos() == null || novo.getDuracaoMinutos() <= 0) ? 60
+				: novo.getDuracaoMinutos();
 
-    if (novo.getInicio() == null) throw new RuntimeException("Data/hora inicial é obrigatória.");
-    Integer dur = (novo.getDuracaoMinutos() == null || novo.getDuracaoMinutos() <= 0) ? 60 : novo.getDuracaoMinutos();
+		a.setInicio(novo.getInicio());
+		a.setDuracaoMinutos(dur);
+		a.setDescricao(novo.getDescricao());
+		a.setStatus((novo.getStatus() == null || novo.getStatus().trim().isEmpty()) ? a.getStatus() : novo.getStatus());
 
-    // opcional: conflito
-    LocalDateTime fimNovo = novo.getInicio().plusMinutes(dur);
-    boolean conflito = repo.existeConflito(a.getIdEmpresa(), u.getIdUsuario(), novo.getInicio(), fimNovo, a.getIdAgendamento());
-    if (conflito) throw new RuntimeException("Conflito de horário para o responsável no intervalo informado.");
+		// responsável opcional (pode remover atribuição)
+		a.setUsuarioResponsavel(null);
 
-    a.setUsuarioResponsavel(u);
-    a.setInicio(novo.getInicio());
-    a.setDuracaoMinutos(dur);
-    a.setDescricao(novo.getDescricao());
-    a.setStatus((novo.getStatus() == null || novo.getStatus().trim().isEmpty()) ? a.getStatus() : novo.getStatus());
-    a.setAtualizadoEm(LocalDateTime.now());
+		a.setAtualizadoEm(LocalDateTime.now());
+		return repo.save(a);
+	}
 
-    return repo.save(a);
-  }
+	public void delete(Long id) {
+		Agendamento a = findById(id);
+		repo.delete(a);
+	}
 
-  public void delete(Long id) {
-    Agendamento a = findById(id);
-    repo.delete(a);
-  }
+	// ===== aliases (igual seu padrão atual) =====
+	public List<Agendamento> list() {
+		return findAll();
+	}
 
-  // ===== aliases (igual seu padrão atual) =====
-  public List<Agendamento> list() { return findAll(); }
-  public Agendamento find(Long id) { return findById(id); }
+	public Agendamento find(Long id) {
+		return findById(id);
+	}
 }

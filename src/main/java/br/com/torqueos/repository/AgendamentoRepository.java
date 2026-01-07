@@ -15,21 +15,27 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
   Optional<Agendamento> findByIdAgendamentoAndIdEmpresa(Long idAgendamento, Long idEmpresa);
 
-  // Opcional: agenda do dia (ou intervalo)
+  // agenda do dia (ou intervalo)
   List<Agendamento> findByIdEmpresaAndInicioBetweenOrderByInicioAsc(Long idEmpresa, LocalDateTime ini, LocalDateTime fim);
 
-  // Opcional: bloquear conflito de horário do mesmo responsável.
-  // Regra: existe conflito se (inicio_existente < fim_novo) e (fim_existente > inicio_novo)
-  @Query(value = "select exists(" + 
-     " select 1 " +
-     " from agendamentos a " +
-     " where a.id_empresa = :idEmpresa " +
-     "   and a.id_usuario_responsavel = :idUsuario " +
-     "   and (:idIgnorar is null or a.id_agendamento <> :idIgnorar) " + 
-     "   and a.inicio < :fimNovo " +
-     "   and (a.inicio + (a.duracao_minutos || ' minutes')::interval) > :inicioNovo " +
-    " ) " 
-  , nativeQuery = true)  
+  // listar de uma data/hora pra frente
+  List<Agendamento> findByIdEmpresaAndInicioGreaterThanEqualOrderByInicioAsc(Long idEmpresa, LocalDateTime inicio);
+
+  /**
+   * Bloquear conflito de horário do mesmo responsável.
+   * Regra: existe conflito se (inicio_existente < fim_novo) e (fim_existente > inicio_novo)
+   *
+   * Postgres-friendly: evita concat + ::interval (que estava quebrando).
+   */
+  @Query(value =   
+    " select case when count(1) > 0 then true else false end " +
+    " from agendamentos a " +
+    " where a.id_empresa = :idEmpresa " +
+    "  and a.id_usuario_responsavel = :idUsuario " +
+    "  and (:idIgnorar is null or a.id_agendamento <> :idIgnorar) " +
+    "  and a.inicio < :fimNovo " +
+    "  and (a.inicio + (a.duracao_minutos * interval '1 minute')) > :inicioNovo " 
+  , nativeQuery = true)
   boolean existeConflito(@Param("idEmpresa") Long idEmpresa,
                          @Param("idUsuario") Long idUsuario,
                          @Param("inicioNovo") LocalDateTime inicioNovo,
