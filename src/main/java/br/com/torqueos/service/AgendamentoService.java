@@ -12,90 +12,89 @@ import java.util.List;
 @Service
 public class AgendamentoService {
 
-	private final AgendamentoRepository repo;
-	private final UsuarioService usuarioService;
-	private final AssinaturaService assinaturaService;
+  private final AgendamentoRepository repo;
+  private final UsuarioService usuarioService;
+  private final AssinaturaService assinaturaService;
 
-	public AgendamentoService(AgendamentoRepository repo, UsuarioService usuarioService,
-			AssinaturaService assinaturaService) {
-		this.repo = repo;
-		this.usuarioService = usuarioService;
-		this.assinaturaService = assinaturaService;
+  public AgendamentoService(AgendamentoRepository repo, UsuarioService usuarioService,
+                            AssinaturaService assinaturaService) {
+    this.repo = repo;
+    this.usuarioService = usuarioService;
+    this.assinaturaService = assinaturaService;
+  }
+
+  public List<Agendamento> findAll() {
+    return repo.findByIdEmpresaOrderByInicioDesc(TenantContext.getEmpresaId());
+  }
+
+  public List<Agendamento> findFrom(LocalDateTime inicioMin) {
+	  Long emp = TenantContext.getEmpresaId();
+	  if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
+	  return repo.findByIdEmpresaAndInicioGreaterThanEqualOrderByInicioAsc(emp, inicioMin);
 	}
+  
+  public Agendamento findById(Long id) {
+    return repo.findByIdAgendamentoAndIdEmpresa(id, TenantContext.getEmpresaId())
+      .orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + id));
+  }
 
-	public List<Agendamento> findAll() {
-		return repo.findByIdEmpresaOrderByInicioDesc(TenantContext.getEmpresaId());
-	}
+  public Agendamento create(Agendamento a, Long idUsuarioResponsavel) {
+    assinaturaService.validarAssinaturaAtiva();
 
-	public List<Agendamento> findFrom(LocalDateTime inicioMin) {
-		return repo.findByIdEmpresaAndInicioGreaterThanEqualOrderByInicioAsc(TenantContext.getEmpresaId(), inicioMin);
-	}
+    Long emp = TenantContext.getEmpresaId();
+    if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
 
-	public Agendamento findById(Long id) {
-		return repo.findByIdAgendamentoAndIdEmpresa(id, TenantContext.getEmpresaId())
-				.orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + id));
-	}
+    if (a.getInicio() == null) throw new RuntimeException("Data/hora inicial é obrigatória.");
+    if (a.getInicio().isBefore(LocalDateTime.now())) throw new RuntimeException("Agendamento não pode ser no passado.");
 
-	public Agendamento create(Agendamento a, Long idUsuarioResponsavel) {
-		assinaturaService.validarAssinaturaAtiva();
+    if (a.getDuracaoMinutos() == null || a.getDuracaoMinutos() <= 0) a.setDuracaoMinutos(60);
+    if (a.getStatus() == null || a.getStatus().trim().isEmpty()) a.setStatus("AGENDADO");
 
-		Long emp = TenantContext.getEmpresaId();
-		if (emp == null)
-			throw new RuntimeException("Tenant não definido (empresaId).");
+      a.setUsuarioResponsavel(null);
 
-		if (a.getInicio() == null)
-			throw new RuntimeException("Data/hora inicial é obrigatória.");
-		if (a.getDuracaoMinutos() == null || a.getDuracaoMinutos() <= 0)
-			a.setDuracaoMinutos(60);
-		if (a.getStatus() == null || a.getStatus().trim().isEmpty())
-			a.setStatus("AGENDADO");
+    a.setIdEmpresa(emp);
+    a.setCriadoEm(LocalDateTime.now());
+    a.setAtualizadoEm(LocalDateTime.now());
 
-		a.setUsuarioResponsavel(null);
+    return repo.save(a);
+  }
 
-		a.setIdEmpresa(emp);
-		a.setCriadoEm(LocalDateTime.now());
-		a.setAtualizadoEm(LocalDateTime.now());
+  public Agendamento update(Long id, Agendamento novo, Long idUsuarioResponsavel) {
+    assinaturaService.validarAssinaturaAtiva();
 
-		return repo.save(a);
-	}
+    Long emp = TenantContext.getEmpresaId();
+    if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
 
-	public Agendamento update(Long id, Agendamento novo, Long idUsuarioResponsavel) {
-		assinaturaService.validarAssinaturaAtiva();
+    Agendamento a = findById(id);
 
-		Long emp = TenantContext.getEmpresaId();
-		if (emp == null)
-			throw new RuntimeException("Tenant não definido (empresaId).");
+    if (novo.getInicio() == null) throw new RuntimeException("Data/hora inicial é obrigatória.");
+    if (novo.getInicio().isBefore(LocalDateTime.now())) throw new RuntimeException("Agendamento não pode ser no passado.");
 
-		Agendamento a = findById(id);
+    Integer dur = (novo.getDuracaoMinutos() == null || novo.getDuracaoMinutos() <= 0) ? 60 : novo.getDuracaoMinutos();
 
-		if (novo.getInicio() == null)
-			throw new RuntimeException("Data/hora inicial é obrigatória.");
-		Integer dur = (novo.getDuracaoMinutos() == null || novo.getDuracaoMinutos() <= 0) ? 60
-				: novo.getDuracaoMinutos();
+    a.setInicio(novo.getInicio());
+    a.setDuracaoMinutos(dur);
+    a.setDescricao(novo.getDescricao());
+    a.setStatus((novo.getStatus() == null || novo.getStatus().trim().isEmpty()) ? a.getStatus() : novo.getStatus());
 
-		a.setInicio(novo.getInicio());
-		a.setDuracaoMinutos(dur);
-		a.setDescricao(novo.getDescricao());
-		a.setStatus((novo.getStatus() == null || novo.getStatus().trim().isEmpty()) ? a.getStatus() : novo.getStatus());
+    // responsável opcional
+      a.setUsuarioResponsavel(null);
 
-		// responsável opcional (pode remover atribuição)
-		a.setUsuarioResponsavel(null);
+    a.setAtualizadoEm(LocalDateTime.now());
+    return repo.save(a);
+  }
 
-		a.setAtualizadoEm(LocalDateTime.now());
-		return repo.save(a);
-	}
+  public void delete(Long id) {
+    Agendamento a = findById(id);
+    repo.delete(a);
+  }
 
-	public void delete(Long id) {
-		Agendamento a = findById(id);
-		repo.delete(a);
-	}
+  // ===== aliases =====
+  public List<Agendamento> list() {
+    return findAll();
+  }
 
-	// ===== aliases (igual seu padrão atual) =====
-	public List<Agendamento> list() {
-		return findAll();
-	}
-
-	public Agendamento find(Long id) {
-		return findById(id);
-	}
+  public Agendamento find(Long id) {
+    return findById(id);
+  }
 }

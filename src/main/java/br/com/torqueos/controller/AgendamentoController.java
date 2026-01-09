@@ -23,11 +23,14 @@ public class AgendamentoController {
   private final UsuarioService usuarioService;
 
   // FORM: dd/MM/yyyy e HH:mm
-  private static final DateTimeFormatter DF_FORM = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+  private static final DateTimeFormatter DF_FORM = DateTimeFormatter.ofPattern("yyyy/MM/dd");
   private static final DateTimeFormatter TF_FORM = DateTimeFormatter.ofPattern("HH:mm");
 
   // LISTA: dd/MM/yyyy HH:mm
   private static final DateTimeFormatter DTF_LIST = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+  
+  private static final DateTimeFormatter DF = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
+
 
   public AgendamentoController(AgendamentoService agendamentoService, UsuarioService usuarioService) {
     this.agendamentoService = agendamentoService;
@@ -36,43 +39,19 @@ public class AgendamentoController {
 
   @GetMapping
   public String list(Model model) {
-    // hoje 00:00 pra frente
-    LocalDateTime inicioHoje = LocalDate.now().atStartOfDay();
-
-    List<Agendamento> lista;
-    try {
-      // Se você adicionar no service (recomendado), usa esse método
-      lista = agendamentoService.findFrom(inicioHoje);
-    } catch (Exception e) {
-      // fallback caso não exista método no service ainda: filtra em memória
-      lista = agendamentoService.findAll().stream()
-          .filter(a -> a.getInicio() != null && !a.getInicio().isBefore(inicioHoje))
-          .collect(Collectors.toList());
-    }
-
-    // View-model simples pra lista já vir com a data formatada
-    List<Map<String, Object>> view = lista.stream().map(a -> {
-      Map<String, Object> m = new HashMap<>();
-      m.put("idAgendamento", a.getIdAgendamento());
-      m.put("usuarioResponsavel", a.getUsuarioResponsavel());
-      m.put("duracaoMinutos", a.getDuracaoMinutos());
-      m.put("status", a.getStatus());
-      m.put("descricao", a.getDescricao());
-      m.put("inicioFmt", a.getInicio() == null ? "" : a.getInicio().format(DTF_LIST));
-      return m;
-    }).collect(Collectors.toList());
-
-    model.addAttribute("agendamentosView", view);
+    model.addAttribute("agendamentos",
+        agendamentoService.findFrom(java.time.LocalDate.now().atStartOfDay()));
     return "agendamento/list";
   }
+
 
   @GetMapping("/novo")
   public String novo(Model model) {
     model.addAttribute("agendamento", new Agendamento());
-    model.addAttribute("usuarios", usuarioService.findAll());
+    model.addAttribute("usuarios", usuarioService.findall());
 
     // deixa em branco (o form usa dd/MM/yyyy)
-    model.addAttribute("data", "");
+    model.addAttribute("dataIso", "");
     model.addAttribute("hora", "");
 
     model.addAttribute("clienteNome", "");
@@ -93,7 +72,7 @@ public class AgendamentoController {
                        @RequestParam(value = "placa", required = false) String placa) {
 
     // data do form é dd/MM/yyyy
-    LocalDate d = LocalDate.parse(data, DF_FORM);
+	  LocalDate d = LocalDate.parse(data, DF);
     LocalTime h = LocalTime.parse(hora, TF_FORM);
     agendamento.setInicio(LocalDateTime.of(d, h));
 
@@ -122,11 +101,12 @@ public class AgendamentoController {
   public String editar(@PathVariable Long id, Model model) {
     Agendamento a = agendamentoService.findById(id);
     model.addAttribute("agendamento", a);
-    model.addAttribute("usuarios", usuarioService.findAll());
+    model.addAttribute("usuarios", usuarioService.findall());
 
     if (a.getInicio() != null) {
-      model.addAttribute("data", a.getInicio().toLocalDate().format(DF_FORM)); // dd/MM/yyyy
-      model.addAttribute("hora", a.getInicio().toLocalTime().format(TF_FORM)); // HH:mm
+    	model.addAttribute("dataIso", a.getInicio().toLocalDate().toString()); // yyyy-MM-dd
+    	model.addAttribute("hora", a.getInicio().toLocalTime().toString().substring(0,5)); // HH:mm
+
     } else {
       model.addAttribute("data", "");
       model.addAttribute("hora", "");

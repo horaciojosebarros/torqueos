@@ -26,12 +26,12 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Nome do cliente</label>
-              <input class="form-control" name="clienteNome" value="${clienteNome}"  />
+              <input class="form-control" name="clienteNome" value="${clienteNome}" />
             </div>
 
             <div class="col-md-3">
               <label class="form-label">Placa</label>
-              <input class="form-control" name="placa" value="${placa}"  />
+              <input class="form-control" name="placa" value="${placa}" />
             </div>
 
             <div class="col-md-3">
@@ -41,33 +41,30 @@
 
             <div class="col-md-6">
               <label class="form-label">Modelo</label>
-              <input class="form-control" name="modelo" value="${modelo}"  />
+              <input class="form-control" name="modelo" value="${modelo}" />
             </div>
-
           </div>
 
           <hr class="my-4"/>
 
-          <!-- Data e hora separados com componentes nativos -->
+          <!-- Data e hora separados (nativo, sem internet) -->
           <div class="row g-3">
-			<div class="row g-3">
-			  <div class="col-md-4">
-			    <label class="form-label">Data</label>
-			    <input type="date" class="form-control" name="data" value="${dataIso}" required="required"/>
-			  </div>
+            <div class="col-md-4">
+              <label class="form-label">Data</label>
+              <!-- ISO (yyyy-MM-dd) -->
+              <input type="date" class="form-control" id="data" name="data" value="${dataIso}" required="required"/>
+              <div class="form-text">Selecione a data no calendário.</div>
+            </div>
 
-			  <div class="col-md-4">
-			    <label class="form-label">Hora</label>
-			    <input type="time" class="form-control" name="hora" value="${hora}" required="required"/>
-			  </div>
+            <div class="col-md-4">
+              <label class="form-label">Hora</label>
+              <input type="time" class="form-control" id="hora" name="hora" value="${hora}" required="required"/>
+            </div>
 
-			  <div class="col-md-4">
-			    <label class="form-label">Duração (min)</label>
-			    <form:input path="duracaoMinutos" cssClass="form-control" />
-			  </div>
-			</div>
-
-
+            <div class="col-md-4">
+              <label class="form-label">Duração (min)</label>
+              <form:input path="duracaoMinutos" cssClass="form-control" />
+            </div>
 
             <div class="col-md-4">
               <label class="form-label">Status</label>
@@ -97,61 +94,56 @@
       </div>
     </div>
   </div>
+
+  <!-- Impedir data/hora no passado (frontend) -->
   <script>
     (function() {
-      const el = document.getElementById('data');
-      if (!el) return;
+      const dataEl = document.getElementById('data');
+      const horaEl = document.getElementById('hora');
+      const form = document.querySelector('form');
+      if (!dataEl || !horaEl || !form) return;
 
-      function maskDate(v) {
-        v = (v || '').replace(/\D/g, '').slice(0, 8); // só números, até 8
-        if (v.length >= 5) return v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
-        if (v.length >= 3) return v.slice(0,2) + '/' + v.slice(2);
-        return v;
+      function pad(n){ return String(n).padStart(2,'0'); }
+
+      function setMinNow() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = pad(now.getMonth()+1);
+        const dd = pad(now.getDate());
+        const hh = pad(now.getHours());
+        const mi = pad(now.getMinutes());
+
+        const todayIso = `${yyyy}-${mm}-${dd}`;
+        dataEl.min = todayIso;
+
+        if (dataEl.value === todayIso) {
+          horaEl.min = `${hh}:${mi}`;
+        } else {
+          horaEl.min = "";
+        }
       }
 
-      el.addEventListener('input', function() {
-        const pos = el.selectionStart;
-        const old = el.value;
-        el.value = maskDate(el.value);
+      function isPastSelection() {
+        if (!dataEl.value || !horaEl.value) return false;
+        const dt = new Date(dataEl.value + "T" + horaEl.value + ":00");
+        return dt.getTime() < Date.now();
+      }
 
-        // tenta manter cursor num lugar "ok"
-        if (el.value.length > old.length && (pos === 2 || pos === 5)) {
-          el.setSelectionRange(pos + 1, pos + 1);
+      dataEl.addEventListener('change', setMinNow);
+      horaEl.addEventListener('focus', setMinNow);
+
+      form.addEventListener('submit', function(e) {
+        setMinNow();
+        if (isPastSelection()) {
+          e.preventDefault();
+          alert('Não é permitido agendar no passado.');
+          dataEl.focus();
         }
       });
 
-      el.addEventListener('blur', function() {
-        // validação simples no blur: dd/MM/aaaa completo
-        const v = el.value || '';
-        const ok = /^\d{2}\/\d{2}\/\d{4}$/.test(v);
-        if (!ok && v.trim().length > 0) {
-          el.classList.add('is-invalid');
-        } else {
-          el.classList.remove('is-invalid');
-        }
-      });
+      setMinNow();
     })();
   </script>
-  
-  <!-- Flatpickr (calendário) - sem jQuery -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
-
-  <script>
-    (function () {
-      const el = document.getElementById('data');
-      if (!el) return;
-
-      flatpickr(el, {
-        locale: "pt",
-        dateFormat: "d/m/Y",   // dd/MM/yyyy
-        allowInput: true,      // permite digitar também
-        disableMobile: true    // força o calendário mesmo no celular
-      });
-    })();
-  </script>
-
 
   <%@ include file="/WEB-INF/views/fragments/footer.jspf" %>
 </body>

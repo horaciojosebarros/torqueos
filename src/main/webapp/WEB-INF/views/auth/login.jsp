@@ -18,9 +18,9 @@
 </c:if>
 
 <form method="post" action="${pageContext.request.contextPath}/auth/login">
-  <div class="mb-3"><label class="form-label">Empresa ID</label><input class="form-control" name="empresaId" value="34"/></div>
+  <div class="mb-3"><label class="form-label">Empresa ID</label><input class="form-control" name="empresaId" value="2"/></div>
   <div class="mb-3"><label class="form-label">Email</label><input class="form-control" name="email" value="horacio.jose.barros@gmail.com"/></div>
-  <div class="mb-3"><label class="form-label">Senha</label><input class="form-control" name="senha" type="password" value="super2"/></div>
+  <div class="mb-3"><label class="form-label">Senha</label><input class="form-control" name="senha" type="password" value="123"/></div>
   <div style="margin-top:10px;">
     <button type="submit" class="btn btn-primary w-100">Entrar</button>
   </div>

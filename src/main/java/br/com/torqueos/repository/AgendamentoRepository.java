@@ -31,13 +31,11 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     " select case when count(1) > 0 then true else false end " +
     " from agendamentos a " +
     " where a.id_empresa = :idEmpresa " +
-    "  and a.id_usuario_responsavel = :idUsuario " +
     "  and (:idIgnorar is null or a.id_agendamento <> :idIgnorar) " +
     "  and a.inicio < :fimNovo " +
     "  and (a.inicio + (a.duracao_minutos * interval '1 minute')) > :inicioNovo " 
   , nativeQuery = true)
   boolean existeConflito(@Param("idEmpresa") Long idEmpresa,
-                         @Param("idUsuario") Long idUsuario,
                          @Param("inicioNovo") LocalDateTime inicioNovo,
                          @Param("fimNovo") LocalDateTime fimNovo,
                          @Param("idIgnorar") Long idIgnorar);
