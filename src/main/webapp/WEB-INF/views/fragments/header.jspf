@@ -31,10 +31,9 @@
 					href="${pageContext.request.contextPath}/pecas">Peças/Produtos</a></li>
 				<li class="nav-item"><a class="nav-link"
 					href="${pageContext.request.contextPath}/servicos">Serviços</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/assinatura">Assinatura</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/pagamentos">Pagamentos</a></li>
+				
+				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/recebimentos">Recebimentos</a>
+</li>
 
 				<c:if test="${sessionScope.ROLE == 'SUPERADMIN'}">
 					<li class="nav-item"><a class="nav-link"
