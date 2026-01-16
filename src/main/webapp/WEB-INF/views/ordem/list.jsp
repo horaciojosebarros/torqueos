@@ -10,9 +10,9 @@
 <div class="container py-4">
 <div class="card app-card">
 <div class="card-body">
-<h2 class="mb-3">Ordens de Serviço</h2>
+<h2 class="mb-3">Orçamento/Ordem de Serviço</h2>
 
-<p><a href="${pageContext.request.contextPath}/ordens/nova">Nova OS</a></p>
+<p><a href="${pageContext.request.contextPath}/ordens/nova">Novo</a></p>
 
 <table class="table table-striped table-hover app-table">
   <tr>

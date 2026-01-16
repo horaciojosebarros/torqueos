@@ -15,7 +15,7 @@
 		<div class="card app-card">
 			<div class="card-body">
 
-				<h2 class="mb-3">${ordem.idOs == null ? 'Nova OS' : 'Editar OS'}</h2>
+				<h2 class="mb-3">${ordem.idOs == null ? 'Novo Orçamento/OS' : 'Editar Orçamento/OS'}</h2>
 
 				<form:form method="POST" modelAttribute="ordem"
 					action="${pageContext.request.contextPath}/ordens/salvar"
@@ -222,7 +222,7 @@
 					<c:if test="${ordem.idOs != null}">
 						<a class="btn btn-outline-primary"
 							href="${pageContext.request.contextPath}/ordens/pdf/${ordem.idOs}"
-							target="_blank"> Gerar PDF </a>
+							target="_blank"> Gerar Orçamento/OS em PDF </a>
 					</c:if>
 					<script>
           function addServicoRow() {

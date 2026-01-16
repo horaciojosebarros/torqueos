@@ -22,7 +22,7 @@
 			<a class="nav-link" href="${pageContext.request.contextPath}/agendamentos">Agendamentos</a>
 			</li>
 				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/ordens">Ordens</a></li>
+					href="${pageContext.request.contextPath}/ordens">Orçamento/OS</a></li>
 				<li class="nav-item"><a class="nav-link"
 					href="${pageContext.request.contextPath}/clientes">Clientes</a></li>
 				<li class="nav-item"><a class="nav-link"

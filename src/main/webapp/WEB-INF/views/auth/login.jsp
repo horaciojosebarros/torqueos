@@ -30,7 +30,6 @@
 </div>
 </div>
 </div>
-<%@ include file="/WEB-INF/views/fragments/footer.jspf" %>
 </div></div></div>
 </div></div></div>
 <%@ include file="/WEB-INF/views/fragments/footer.jspf" %>
