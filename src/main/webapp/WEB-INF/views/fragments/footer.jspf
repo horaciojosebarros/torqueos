@@ -1,11 +1,46 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<footer class="app-footer mt-auto py-4">
-  <div class="container text-center">
-    <div class="small">
-      <b>TorqueOS</b> — Controle total da sua oficina.
-      <span class="mx-2">•</span>
-      <span class="text-muted">SaaS multiempresa</span>
+
+<footer class="app-footer mt-auto py-4" style="background:#1E1E1E;">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-3">
+
+      <!-- LOGO JWAY -->
+      <svg width="140" height="40" viewBox="0 0 220 64" fill="none"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gFooter" x1="0" y1="0" x2="220" y2="64" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0F7A36"/>
+            <stop offset="1" stop-color="#16A34A"/>
+          </linearGradient>
+        </defs>
+
+        <g>
+          <path d="M24 46C34.5 46 44 36.5 44 26C44 15.5 34.5 6 24 6C13.5 6 4 15.5 4 26C4 36.5 13.5 46 24 46Z"
+                fill="url(#gFooter)"/>
+          <path d="M16 26L22 32L33 19"
+                stroke="white" stroke-width="4.2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+
+        <g>
+          <text x="58" y="41"
+                font-family="Arial, Helvetica, sans-serif"
+                font-size="34"
+                font-weight="800"
+                fill="#16A34A">Jway</text>
+          <rect x="58" y="48" width="130" height="4" rx="2"
+                fill="#16A34A" opacity="0.45"/>
+        </g>
+      </svg>
+
+      <!-- TEXTO -->
+      <div class="text-center text-md-start small" style="line-height:1.4;">
+        <b style="color:#FFFFFF;">TorqueOS</b>
+        <span style="color:#A7D7B5;">— Controle total da sua oficina.</span>
+        <span class="mx-2" style="color:#A7D7B5;">•</span>
+        <span style="color:#A7D7B5;">SaaS multiempresa</span>
+      </div>
+
     </div>
   </div>
 </footer>
-

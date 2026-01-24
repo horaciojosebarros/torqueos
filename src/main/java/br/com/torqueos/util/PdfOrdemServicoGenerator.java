@@ -68,9 +68,9 @@ public class PdfOrdemServicoGenerator {
       right.setBorder(Rectangle.NO_BORDER);
       right.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
-      right.addElement(new Paragraph("ORDEM DE SERVIÇO", title));
+      right.addElement(new Paragraph("ORÇAMENTO / OS", title));
 
-      String osNum = "OS #" + safe(os.getIdOs());
+      String osNum = "Número #" + safe(os.getIdOs());
       right.addElement(new Paragraph(osNum, h));
 
       String geradoEm = "Gerado em: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));

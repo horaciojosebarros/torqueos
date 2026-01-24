@@ -4,11 +4,46 @@
 <nav class="navbar navbar-expand-lg navbar-dark"
 	style="background: #1E1E1E;">
 	<div class="container-fluid">
-		<a class="navbar-brand fw-bold"
-			href="${pageContext.request.contextPath}/">TorqueOS</a> <span
-			class="navbar-text d-none d-lg-inline"
-			style="color: #A7D7B5; font-weight: 600;"> Controle total da
-			sua oficina </span>
+		<a class="navbar-brand d-flex align-items-center gap-3"
+   href="${pageContext.request.contextPath}/">
+
+  <!-- LOGO JWAY -->
+  <svg width="160" height="46" viewBox="0 0 220 64" fill="none"
+       xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="220" y2="64" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#0F7A36"/>
+        <stop offset="1" stop-color="#16A34A"/>
+      </linearGradient>
+    </defs>
+    <g>
+      <path d="M24 46C34.5 46 44 36.5 44 26C44 15.5 34.5 6 24 6C13.5 6 4 15.5 4 26C4 36.5 13.5 46 24 46Z" fill="url(#g)"/>
+      <path d="M16 26L22 32L33 19" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g>
+      <text x="58" y="41" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#0B3D1D">J</text>
+      <text x="78" y="41" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#16A34A">way</text>
+      <rect x="58" y="48" width="130" height="4" rx="2" fill="#16A34A" opacity="0.45"/>
+    </g>
+  </svg>
+
+  <!-- DIZERES (MESMOS DO FOOTER) -->
+  <span class="d-none d-lg-inline" style="line-height:1.1;">
+    <b style="color:#FFFFFF;">TorqueOS</b>
+    <span style="color:#A7D7B5; font-weight:600;">— Controle total da sua oficina.</span>
+    <span class="mx-2" style="color:#A7D7B5;">•</span>
+    <span style="color:#A7D7B5; font-weight:600;">SaaS multiempresa</span>
+  </span>
+
+  <!-- versão curta em telas menores -->
+  <span class="d-inline d-lg-none" style="color:#A7D7B5; font-weight:600;">
+    TorqueOS
+  </span>
+
+</a>
+
+
+
 
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
 			data-bs-target="#navbarTorque" aria-controls="navbarTorque"
