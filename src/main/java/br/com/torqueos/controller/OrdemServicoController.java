@@ -2,6 +2,7 @@ package br.com.torqueos.controller;
 
 import br.com.torqueos.model.OrdemServico;
 import br.com.torqueos.service.*;
+import br.com.torqueos.util.PdfOrdemServicoGenerator;
 
 import java.util.Collections;
 import java.util.List;
@@ -9,9 +10,6 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import java.nio.charset.StandardCharsets;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 @Controller
@@ -156,11 +154,8 @@ public class OrdemServicoController {
       assinaturaLinha2 = "";
     }
 
-    byte[] pdfBytes = br.com.torqueos.util.PdfOrdemServicoGenerator.gerar(
-        os, servicos, pecas,
-        empresaNome, empresaCnpj,
-        assinaturaLinha1, assinaturaLinha2
-    );
+    byte[] pdfBytes = PdfOrdemServicoGenerator.gerar(os, servicos, pecas, empresaNome, empresaCnpj);
+
 
     String filename = "OS-" + id + ".pdf";
     return ResponseEntity.ok()

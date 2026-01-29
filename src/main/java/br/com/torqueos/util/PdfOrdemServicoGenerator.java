@@ -20,9 +20,7 @@ public class PdfOrdemServicoGenerator {
                              List<ServicoOS> servicos,
                              List<PecaOS> pecas,
                              String empresaNome,
-                             String empresaCnpj,
-                             String assinaturaLinha1,
-                             String assinaturaLinha2) {
+                             String empresaCnpj) {
     try {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -37,7 +35,7 @@ public class PdfOrdemServicoGenerator {
       Font small = new Font(Font.HELVETICA, 9, Font.NORMAL);
 
       // =========================
-      // CABEÇALHO
+      // CABEÇALHO (somente empresa)
       // =========================
       PdfPTable header = new PdfPTable(new float[] { 3.5f, 2f });
       header.setWidthPercentage(100);
@@ -50,15 +48,7 @@ public class PdfOrdemServicoGenerator {
       left.addElement(pEmpresa);
 
       if (empresaCnpj != null && !empresaCnpj.trim().isEmpty()) {
-        left.addElement(new Paragraph("CNPJ: " + empresaCnpj, small));
-      }
-
-      // assinatura
-      if (assinaturaLinha1 != null && !assinaturaLinha1.trim().isEmpty()) {
-        left.addElement(new Paragraph(assinaturaLinha1, small));
-      }
-      if (assinaturaLinha2 != null && !assinaturaLinha2.trim().isEmpty()) {
-        left.addElement(new Paragraph(assinaturaLinha2, small));
+        left.addElement(new Paragraph("CNPJ: " + empresaCnpj.trim(), small));
       }
 
       header.addCell(left);
@@ -70,10 +60,11 @@ public class PdfOrdemServicoGenerator {
 
       right.addElement(new Paragraph("ORÇAMENTO / OS", title));
 
-      String osNum = "Número #" + safe(os.getIdOs());
+      String osNum = "Número #" + safe(os != null ? os.getIdOs() : "");
       right.addElement(new Paragraph(osNum, h));
 
-      String geradoEm = "Gerado em: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+      String geradoEm = "Gerado em: " + LocalDateTime.now()
+          .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
       right.addElement(new Paragraph(geradoEm, small));
 
       header.addCell(right);
@@ -93,20 +84,20 @@ public class PdfOrdemServicoGenerator {
       info.setWidthPercentage(100);
 
       info.addCell(labelCell("Cliente"));
-      info.addCell(valueCell(os.getCliente() != null ? os.getCliente().getNome() : "-", normal));
+      info.addCell(valueCell(os != null && os.getCliente() != null ? os.getCliente().getNome() : "-", normal));
 
       info.addCell(labelCell("Veículo"));
       String veic = "-";
-      if (os.getVeiculo() != null) {
+      if (os != null && os.getVeiculo() != null) {
         veic = safe(os.getVeiculo().getPlaca()) + " - " + safe(os.getVeiculo().getModelo());
       }
       info.addCell(valueCell(veic, normal));
 
       info.addCell(labelCell("Status"));
-      info.addCell(valueCell(safe(os.getStatus()), normal));
+      info.addCell(valueCell(os != null ? safe(os.getStatus()) : "-", normal));
 
       info.addCell(labelCell("Observações"));
-      info.addCell(valueCell(safe(os.getObservacoes()), normal));
+      info.addCell(valueCell(os != null ? safe(os.getObservacoes()) : "", normal));
 
       doc.add(info);
       doc.add(Chunk.NEWLINE);
@@ -195,13 +186,17 @@ public class PdfOrdemServicoGenerator {
       totalLabel.setBackgroundColor(new java.awt.Color(240, 240, 240));
       tot.addCell(totalLabel);
 
-      PdfPCell totalValue = valueCell(formatMoney(total), new Font(Font.HELVETICA, 10, Font.BOLD), Element.ALIGN_RIGHT);
+      PdfPCell totalValue = valueCell(
+          formatMoney(total),
+          new Font(Font.HELVETICA, 10, Font.BOLD),
+          Element.ALIGN_RIGHT
+      );
       totalValue.setBackgroundColor(new java.awt.Color(240, 240, 240));
       tot.addCell(totalValue);
 
       doc.add(tot);
 
-      // Rodapé simples
+      // Rodapé simples (sem assinatura / sem plano / sem SaaS)
       doc.add(Chunk.NEWLINE);
       Paragraph footer = new Paragraph("Documento gerado pelo TorqueOS", small);
       footer.setAlignment(Element.ALIGN_CENTER);
@@ -252,9 +247,9 @@ public class PdfOrdemServicoGenerator {
     return o == null ? "" : String.valueOf(o);
   }
 
+  @SuppressWarnings("deprecation")
   private static String formatMoney(BigDecimal v) {
     if (v == null) return "0.00";
-    // mantém simples e compatível (sem locale)
     return v.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
   }
 }

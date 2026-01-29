@@ -28,12 +28,11 @@
   </svg>
 
   <!-- DIZERES (MESMOS DO FOOTER) -->
-  <span class="d-none d-lg-inline" style="line-height:1.1;">
-    <b style="color:#FFFFFF;">TorqueOS</b>
-    <span style="color:#A7D7B5; font-weight:600;">— Controle total da sua oficina.</span>
-    <span class="mx-2" style="color:#A7D7B5;">•</span>
-    <span style="color:#A7D7B5; font-weight:600;">SaaS multiempresa</span>
-  </span>
+  <span class="navbar-text d-none d-lg-inline" style="color: #A7D7B5; font-weight: 600;">
+  Controle operacional da sua oficina
+  <span class="mx-2">•</span>
+  <b><c:out value="${sessionScope.EMPRESA_NOME != null ? sessionScope.EMPRESA_NOME : 'Empresa não selecionada'}"/></b>
+</span>
 
   <!-- versão curta em telas menores -->
   <span class="d-inline d-lg-none" style="color:#A7D7B5; font-weight:600;">

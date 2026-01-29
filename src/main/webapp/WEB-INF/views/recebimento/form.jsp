@@ -22,12 +22,19 @@
 
         <form:hidden path="idRecebimento"/>
 
-        <div class="row g-3">
+        <c:set var="bloquearOs" value="${osPago}" />
 
-          <!-- OS -->
+        <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Ordem de Serviço</label>
-            <select class="form-select" name="osId" required="required">
+
+            <c:if test="${bloquearOs}">
+              <input type="hidden" name="osId"
+                     value="${osId != null ? osId : (recebimento.ordemServico != null ? recebimento.ordemServico.idOs : '')}"/>
+            </c:if>
+
+            <select class="form-select" name="osId" id="osId" required="required"
+                    <c:if test="${bloquearOs}">disabled</c:if>>
               <option value="">-- selecione --</option>
               <c:forEach var="os" items="${ordens}">
                 <option value="${os.idOs}"
@@ -36,9 +43,12 @@
                 </option>
               </c:forEach>
             </select>
+
+            <c:if test="${bloquearOs}">
+              <div class="small text-muted mt-1">OS bloqueada porque este recebimento está PAGO. Para trocar, exclua o recebimento.</div>
+            </c:if>
           </div>
 
-          <!-- Status -->
           <div class="col-md-3">
             <label class="form-label">Status</label>
             <form:select path="status" cssClass="form-select" required="required" id="status">
@@ -49,7 +59,6 @@
             </form:select>
           </div>
 
-          <!-- Tipo -->
           <div class="col-md-3">
             <label class="form-label">Tipo de pagamento</label>
             <form:select path="tipoPagamento" cssClass="form-select" required="required">
@@ -62,42 +71,49 @@
             </form:select>
           </div>
 
-          <!-- Valor -->
           <div class="col-md-4">
-            <label class="form-label">Valor total</label>
-            <form:input path="valorTotal" cssClass="form-control" required="required"/>
+            <label class="form-label">Total base da OS</label>
+            <input class="form-control" id="osBase" value="" readonly="readonly"/>
+            <div class="form-text">Soma serviços + peças (via AJAX).</div>
           </div>
 
-          <!-- Vencimento (NÃO bindar LocalDate no form tag) -->
+          <div class="col-md-4">
+            <label class="form-label">Valor final</label>
+            <input class="form-control" id="valorFinalVis" value="" readonly="readonly"/>
+            <!-- valorTotal persistido (backend recalcula sempre, mas mantemos pra edição / histórico) -->
+            <form:input path="valorTotal" cssClass="form-control" id="valorTotal" style="display:none;"/>
+          </div>
+
           <div class="col-md-4">
             <label class="form-label">Vencimento</label>
-            <input type="date" class="form-control" name="dataVencimento" value="${dataVencimentoIso}"/>
+            <input type="date" class="form-control" name="dataVencimentoIso" value="${dataVencimentoIso}"/>
           </div>
 
-          <!-- Data/Hora Pagamento separados (evita bind de LocalDateTime) -->
-          <div class="col-md-2">
+          <div class="col-md-4">
             <label class="form-label">Data pagamento</label>
-            <input type="date" class="form-control" name="dataPagamento" value="${dataPagamentoIso}"/>
+            <input type="date" class="form-control" name="dataPagamentoIso" value="${dataPagamentoIso}" />
           </div>
 
           <div class="col-md-2">
-            <label class="form-label">Hora pagamento</label>
-            <input type="time" class="form-control" name="horaPagamento" value="${horaPagamento}"/>
+            <label class="form-label">Hora</label>
+            <input type="time" class="form-control" name="horaPagamento" value="${horaPagamento}" />
           </div>
 
-          <!-- Financeiro -->
           <div class="col-md-3">
             <label class="form-label">Desconto</label>
-            <form:input path="desconto" cssClass="form-control"/>
+            <form:input path="desconto" cssClass="form-control" id="desconto"/>
           </div>
+
           <div class="col-md-3">
             <label class="form-label">Juros</label>
-            <form:input path="juros" cssClass="form-control"/>
+            <form:input path="juros" cssClass="form-control" id="juros"/>
           </div>
+
           <div class="col-md-3">
             <label class="form-label">Multa</label>
-            <form:input path="multa" cssClass="form-control"/>
+            <form:input path="multa" cssClass="form-control" id="multa"/>
           </div>
+
           <div class="col-md-3">
             <label class="form-label">Parcelas</label>
             <form:input path="parcelas" cssClass="form-control"/>
@@ -107,6 +123,7 @@
             <label class="form-label">Referência</label>
             <form:input path="referencia" cssClass="form-control"/>
           </div>
+
           <div class="col-md-6">
             <label class="form-label">Documento ref</label>
             <form:input path="documentoRef" cssClass="form-control"/>
@@ -130,27 +147,94 @@
 </div>
 
 <script>
-  (function() {
-    const statusEl = document.getElementById('status');
-    const dataPgEl = document.querySelector('input[name="dataPagamento"]');
-    const horaPgEl = document.querySelector('input[name="horaPagamento"]');
+(function(){
+  const ctx = "${pageContext.request.contextPath}";
+  const osSelect = document.getElementById("osId");
+  const osBase = document.getElementById("osBase");
+  const valorTotal = document.getElementById("valorTotal");       // hidden persist
+  const valorFinalVis = document.getElementById("valorFinalVis"); // readonly
+  const desconto = document.getElementById("desconto");
+  const juros = document.getElementById("juros");
+  const multa = document.getElementById("multa");
 
-    function togglePagamentoFields() {
-      const st = (statusEl && statusEl.value) ? statusEl.value : '';
-      const isPago = (st === 'PAGO');
+  const bloquearOs = ${osPago ? "true" : "false"};
 
-      // se for PAGO, sugere data/hora (mas não obriga)
-      if (isPago) {
-        if (dataPgEl && !dataPgEl.value) dataPgEl.value = new Date().toISOString().slice(0,10);
-        if (horaPgEl && !horaPgEl.value) horaPgEl.value = new Date().toTimeString().slice(0,5);
+  function toNumber(v){
+    if(!v) return 0;
+    v = (""+v).replace(",", ".").replace(/[^0-9.\-]/g,'');
+    const n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
+  function fmt2(n){ return (Math.round(n * 100) / 100).toFixed(2); }
+
+  function recalcFinal(){
+    const base = toNumber(valorTotal?.value);
+    const finalVal = base - toNumber(desconto?.value) + toNumber(juros?.value) + toNumber(multa?.value);
+    if(valorFinalVis) valorFinalVis.value = fmt2(finalVal);
+  }
+
+  async function carregarTotalDaOs(osId){
+    if(!osId){
+      if(osBase) osBase.value = "";
+      recalcFinal();
+      return;
+    }
+
+    const url = ctx + "/api/ordens/total/" + osId;
+    console.log("GET:", url);
+
+    if(osBase) osBase.value = "Carregando...";
+
+    try{
+      const resp = await fetch(url, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+
+      if(!resp.ok){
+        if(osBase) osBase.value = "Erro HTTP " + resp.status;
+        return;
       }
-    }
 
-    if (statusEl) {
-      statusEl.addEventListener('change', togglePagamentoFields);
-      togglePagamentoFields();
+      const json = await resp.json();
+      const totalBase = toNumber(json.totalBase);
+
+      if(osBase) osBase.value = fmt2(totalBase);
+
+      // Apenas para exibir e recalcular no front (backend recalcula ao salvar)
+      if(valorTotal) valorTotal.value = fmt2(totalBase);
+
+      recalcFinal();
+    } catch(e){
+      if(osBase) osBase.value = "Erro ao calcular";
+      console.error(e);
     }
-  })();
+  }
+
+  if(osSelect && !bloquearOs){
+    osSelect.addEventListener("change", function(){
+      carregarTotalDaOs(this.value);
+    });
+  }
+
+  ["input","change"].forEach(evt => {
+    desconto?.addEventListener(evt, recalcFinal);
+    juros?.addEventListener(evt, recalcFinal);
+    multa?.addEventListener(evt, recalcFinal);
+  });
+
+  // inicial
+  if(osSelect && osSelect.value){
+    if(!bloquearOs) carregarTotalDaOs(osSelect.value);
+    else {
+      // pago: mostra o que já está persistido
+      if(osBase) osBase.value = valorTotal?.value ? fmt2(toNumber(valorTotal.value)) : "";
+      recalcFinal();
+    }
+  } else {
+    recalcFinal();
+  }
+})();
 </script>
 
 <%@ include file="/WEB-INF/views/fragments/footer.jspf" %>
