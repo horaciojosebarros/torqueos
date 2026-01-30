@@ -4,6 +4,7 @@ import br.com.torqueos.model.Empresa;
 import br.com.torqueos.repository.EmpresaRepository;
 import br.com.torqueos.tenant.TenantContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EmpresaService {
@@ -22,5 +23,22 @@ public class EmpresaService {
 
   public String getNomeEmpresaAtual() {
     return getEmpresaAtual().getNome();
+  }
+
+  @Transactional
+  public Empresa atualizarEmpresaAtual(Empresa form) {
+    Empresa atual = getEmpresaAtual();
+
+    // atualiza APENAS campos editáveis
+    atual.setNome(form.getNome());
+    atual.setCnpj(form.getCnpj());
+    atual.setTelefone(form.getTelefone());
+    atual.setEndereco(form.getEndereco());
+    atual.setBairro(form.getBairro());
+    atual.setCidade(form.getCidade());
+    atual.setUf(form.getUf());
+
+    // status/criadoEm/id NÃO mudam por aqui
+    return repo.save(atual);
   }
 }

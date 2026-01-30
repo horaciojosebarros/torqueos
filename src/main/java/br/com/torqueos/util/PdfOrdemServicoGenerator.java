@@ -16,11 +16,38 @@ import br.com.torqueos.model.ServicoOS;
 
 public class PdfOrdemServicoGenerator {
 
+  // ============================================================
+  // COMPAT: mantém assinatura antiga (não quebra quem já chama)
+  // ============================================================
   public static byte[] gerar(OrdemServico os,
                              List<ServicoOS> servicos,
                              List<PecaOS> pecas,
                              String empresaNome,
                              String empresaCnpj) {
+    return gerar(os, servicos, pecas,
+        empresaNome,
+        empresaCnpj,
+        null,   // telefone
+        null,   // endereco
+        null,   // bairro
+        null,   // cidade
+        null    // uf
+    );
+  }
+
+  // ============================================================
+  // NOVA: cabeçalho completo com dados da empresa
+  // ============================================================
+  public static byte[] gerar(OrdemServico os,
+                             List<ServicoOS> servicos,
+                             List<PecaOS> pecas,
+                             String empresaNome,
+                             String empresaCnpj,
+                             String empresaTelefone,
+                             String empresaEndereco,
+                             String empresaBairro,
+                             String empresaCidade,
+                             String empresaUf) {
     try {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -28,52 +55,116 @@ public class PdfOrdemServicoGenerator {
       PdfWriter.getInstance(doc, out);
       doc.open();
 
+      // =========================
       // Fontes
-      Font title = new Font(Font.HELVETICA, 16, Font.BOLD);
+      // =========================
+      Font title = new Font(Font.HELVETICA, 15, Font.BOLD);
       Font h = new Font(Font.HELVETICA, 11, Font.BOLD);
       Font normal = new Font(Font.HELVETICA, 10, Font.NORMAL);
       Font small = new Font(Font.HELVETICA, 9, Font.NORMAL);
+      Font smallBold = new Font(Font.HELVETICA, 9, Font.BOLD);
 
       // =========================
-      // CABEÇALHO (somente empresa)
+      // CABEÇALHO PROFISSIONAL
+      // - barra superior
+      // - bloco empresa (nome, cnpj, fone, endereço completo)
+      // - bloco documento (título, nº OS, data)
       // =========================
-      PdfPTable header = new PdfPTable(new float[] { 3.5f, 2f });
+      java.awt.Color brand = new java.awt.Color(22, 163, 74);    // verde
+      java.awt.Color lightGray = new java.awt.Color(245, 245, 245);
+      java.awt.Color textGray = new java.awt.Color(90, 90, 90);
+
+      // barra superior (linha verde)
+      PdfPTable topBar = new PdfPTable(1);
+      topBar.setWidthPercentage(100);
+      PdfPCell bar = new PdfPCell(new Phrase(""));
+      bar.setFixedHeight(5f);
+      bar.setBorder(Rectangle.NO_BORDER);
+      bar.setBackgroundColor(brand);
+      topBar.addCell(bar);
+      doc.add(topBar);
+
+      doc.add(Chunk.NEWLINE);
+
+      // tabela do header (empresa à esquerda, documento à direita)
+      PdfPTable header = new PdfPTable(new float[] { 3.8f, 2.2f });
       header.setWidthPercentage(100);
 
-      // Coluna esquerda: Empresa
+      // ---- ESQUERDA: empresa
       PdfPCell left = new PdfPCell();
       left.setBorder(Rectangle.NO_BORDER);
+      left.setPadding(0);
 
+      // Nome da empresa (bem destacado)
       Paragraph pEmpresa = new Paragraph(safe(empresaNome), new Font(Font.HELVETICA, 13, Font.BOLD));
+      pEmpresa.setSpacingAfter(4f);
       left.addElement(pEmpresa);
 
-      if (empresaCnpj != null && !empresaCnpj.trim().isEmpty()) {
-        left.addElement(new Paragraph("CNPJ: " + empresaCnpj.trim(), small));
+      // Linha 1: CNPJ e Telefone
+      String linhaDoc = joinNonEmpty(" | ",
+          prefixIfNotEmpty("CNPJ: ", empresaCnpj),
+          prefixIfNotEmpty("Tel: ", empresaTelefone)
+      );
+      if (!linhaDoc.isEmpty()) {
+        Paragraph p1 = new Paragraph(linhaDoc, small);
+        p1.getFont().setColor(textGray);
+        p1.setSpacingAfter(2f);
+        left.addElement(p1);
+      }
+
+      // Linha 2: Endereço completo
+      String enderecoCompleto = joinEndereco(empresaEndereco, empresaBairro, empresaCidade, empresaUf);
+      if (!enderecoCompleto.isEmpty()) {
+        Paragraph p2 = new Paragraph(enderecoCompleto, small);
+        p2.getFont().setColor(textGray);
+        left.addElement(p2);
       }
 
       header.addCell(left);
 
-      // Coluna direita: OS e geração
+      // ---- DIREITA: documento
       PdfPCell right = new PdfPCell();
       right.setBorder(Rectangle.NO_BORDER);
       right.setHorizontalAlignment(Element.ALIGN_RIGHT);
+      right.setPadding(0);
 
-      right.addElement(new Paragraph("ORÇAMENTO / OS", title));
+      // "chip" do título
+      PdfPTable chip = new PdfPTable(1);
+      chip.setWidthPercentage(100);
 
-      String osNum = "Número #" + safe(os != null ? os.getIdOs() : "");
-      right.addElement(new Paragraph(osNum, h));
+      PdfPCell chipCell = new PdfPCell(new Phrase("ORÇAMENTO / ORDEM DE SERVIÇO", smallBold));
+      chipCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+      chipCell.setPadding(6f);
+      chipCell.setBorder(Rectangle.NO_BORDER);
+      chipCell.setBackgroundColor(lightGray);
+      chip.addCell(chipCell);
+
+      right.addElement(chip);
+
+      right.addElement(Chunk.NEWLINE);
+
+      String osNum = "Nº " + safe(os != null ? os.getIdOs() : "");
+      Paragraph pOs = new Paragraph(osNum, new Font(Font.HELVETICA, 14, Font.BOLD));
+      pOs.setAlignment(Element.ALIGN_RIGHT);
+      right.addElement(pOs);
 
       String geradoEm = "Gerado em: " + LocalDateTime.now()
           .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-      right.addElement(new Paragraph(geradoEm, small));
+      Paragraph pData = new Paragraph(geradoEm, small);
+      pData.setAlignment(Element.ALIGN_RIGHT);
+      pData.getFont().setColor(textGray);
+      right.addElement(pData);
 
       header.addCell(right);
 
       doc.add(header);
 
-      // linha separadora
+      doc.add(Chunk.NEWLINE);
+
+      // separador fino
       LineSeparator sep = new LineSeparator();
-      sep.setLineWidth(1f);
+      sep.setLineWidth(0.8f);
+      sep.setLineColor(new java.awt.Color(210, 210, 210));
       doc.add(new Chunk(sep));
       doc.add(Chunk.NEWLINE);
 
@@ -196,7 +287,7 @@ public class PdfOrdemServicoGenerator {
 
       doc.add(tot);
 
-      // Rodapé simples (sem assinatura / sem plano / sem SaaS)
+      // Rodapé simples
       doc.add(Chunk.NEWLINE);
       Paragraph footer = new Paragraph("Documento gerado pelo TorqueOS", small);
       footer.setAlignment(Element.ALIGN_CENTER);
@@ -245,6 +336,36 @@ public class PdfOrdemServicoGenerator {
 
   private static String safe(Object o) {
     return o == null ? "" : String.valueOf(o);
+  }
+
+  private static String prefixIfNotEmpty(String prefix, String value) {
+    String v = (value == null ? "" : value.trim());
+    if (v.isEmpty()) return "";
+    return prefix + v;
+  }
+
+  private static String joinNonEmpty(String sep, String... parts) {
+    StringBuilder sb = new StringBuilder();
+    if (parts != null) {
+      for (String p : parts) {
+        if (p != null && !p.trim().isEmpty()) {
+          if (sb.length() > 0) sb.append(sep);
+          sb.append(p.trim());
+        }
+      }
+    }
+    return sb.toString();
+  }
+
+  private static String joinEndereco(String endereco, String bairro, String cidade, String uf) {
+    String end = (endereco == null ? "" : endereco.trim());
+    String bai = (bairro == null ? "" : bairro.trim());
+    String cid = (cidade == null ? "" : cidade.trim());
+    String u = (uf == null ? "" : uf.trim());
+
+    String cidadeUf = joinNonEmpty(" / ", cid, u);
+    String linha = joinNonEmpty(" - ", end, bai, cidadeUf);
+    return linha;
   }
 
   @SuppressWarnings("deprecation")

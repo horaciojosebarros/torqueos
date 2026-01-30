@@ -1,5 +1,6 @@
 package br.com.torqueos.controller;
 
+import br.com.torqueos.model.Empresa;
 import br.com.torqueos.model.OrdemServico;
 import br.com.torqueos.model.RecebimentoOS;
 import br.com.torqueos.service.*;
@@ -27,6 +28,7 @@ public class OrdemServicoController {
   private final PecaService pecaService;
   private final ServicoService servicoService;
   private final RecebimentoOSService recebimentoOSService;
+  private final EmpresaService empresaService;
 
   // ✅ técnicos
   private final TecnicoService tecnicoService;
@@ -41,7 +43,7 @@ public class OrdemServicoController {
                                 ServicoService servicoService,
                                 RecebimentoOSService recebimentoOSService,
                                 TecnicoService tecnicoService,
-                                OrdemServicoTecnicoService osTecnicoService) {
+                                OrdemServicoTecnicoService osTecnicoService, EmpresaService empresaService) {
     this.ordemServicoService = ordemServicoService;
     this.clienteService = clienteService;
     this.veiculoService = veiculoService;
@@ -53,6 +55,7 @@ public class OrdemServicoController {
 
     this.tecnicoService = tecnicoService;
     this.osTecnicoService = osTecnicoService;
+    this.empresaService = empresaService;
   }
 
   @GetMapping
@@ -146,13 +149,22 @@ public class OrdemServicoController {
       assinaturaLinha2 = "";
     }
 
-    byte[] pdfBytes = PdfOrdemServicoGenerator.gerar(os, servicos, pecas, empresaNome, empresaCnpj);
+    Empresa emp = empresaService.getEmpresaAtual();
+    byte[] pdf = PdfOrdemServicoGenerator.gerar(os, servicos, pecas,
+        emp.getNome(),
+        emp.getCnpj(),
+        emp.getTelefone(),
+        emp.getEndereco(),
+        emp.getBairro(),
+        emp.getCidade(),
+        emp.getUf()
+    );
 
     String filename = "OS-" + id + ".pdf";
     return ResponseEntity.ok()
         .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
         .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-        .body(pdfBytes);
+        .body(pdf);
   }
 
   @GetMapping("/nova")

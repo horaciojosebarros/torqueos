@@ -61,10 +61,21 @@
                 </c:otherwise>
               </c:choose>
 
-              <a class="btn btn-sm btn-outline-danger"
-                 href="${pageContext.request.contextPath}/ordens/excluir/${os.idOs}">
-                Excluir
-              </a>
+              <!-- Excluir também desabilitado quando PAGA -->
+              <c:choose>
+                <c:when test="${paga}">
+                  <a class="btn btn-sm btn-outline-danger disabled" href="#" tabindex="-1" aria-disabled="true">
+                    Excluir
+                  </a>
+                </c:when>
+                <c:otherwise>
+                  <a class="btn btn-sm btn-outline-danger"
+                     href="${pageContext.request.contextPath}/ordens/excluir/${os.idOs}">
+                    Excluir
+                  </a>
+                </c:otherwise>
+              </c:choose>
+
             </td>
           </tr>
         </c:forEach>

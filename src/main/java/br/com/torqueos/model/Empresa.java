@@ -18,6 +18,22 @@ public class Empresa {
   @Column(length = 20)
   private String cnpj;
 
+  // NOVOS CAMPOS
+  @Column(length = 20)
+  private String telefone;
+
+  @Column(length = 200)
+  private String endereco;
+
+  @Column(length = 120)
+  private String bairro;
+
+  @Column(length = 120)
+  private String cidade;
+
+  @Column(length = 2)
+  private String uf;
+
   @Column(nullable = false, length = 20)
   private String status;
 
@@ -32,6 +48,21 @@ public class Empresa {
 
   public String getCnpj() { return cnpj; }
   public void setCnpj(String cnpj) { this.cnpj = cnpj; }
+
+  public String getTelefone() { return telefone; }
+  public void setTelefone(String telefone) { this.telefone = telefone; }
+
+  public String getEndereco() { return endereco; }
+  public void setEndereco(String endereco) { this.endereco = endereco; }
+
+  public String getBairro() { return bairro; }
+  public void setBairro(String bairro) { this.bairro = bairro; }
+
+  public String getCidade() { return cidade; }
+  public void setCidade(String cidade) { this.cidade = cidade; }
+
+  public String getUf() { return uf; }
+  public void setUf(String uf) { this.uf = uf; }
 
   public String getStatus() { return status; }
   public void setStatus(String status) { this.status = status; }

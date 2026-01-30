@@ -1,103 +1,142 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
-<nav class="navbar navbar-expand-lg navbar-dark"
-	style="background: #1E1E1E;">
-	<div class="container-fluid">
-		<a class="navbar-brand d-flex align-items-center gap-3"
-   href="${pageContext.request.contextPath}/">
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: #1E1E1E;">
+  <div class="container-fluid">
 
-  <!-- LOGO JWAY -->
-  <svg width="160" height="46" viewBox="0 0 220 64" fill="none"
-       xmlns="http://www.w3.org/2000/svg" style="display:block">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="220" y2="64" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#0F7A36"/>
-        <stop offset="1" stop-color="#16A34A"/>
-      </linearGradient>
-    </defs>
-    <g>
-      <path d="M24 46C34.5 46 44 36.5 44 26C44 15.5 34.5 6 24 6C13.5 6 4 15.5 4 26C4 36.5 13.5 46 24 46Z" fill="url(#g)"/>
-      <path d="M16 26L22 32L33 19" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-    <g>
-      <text x="58" y="41" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#0B3D1D">J</text>
-      <text x="78" y="41" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#16A34A">way</text>
-      <rect x="58" y="48" width="130" height="4" rx="2" fill="#16A34A" opacity="0.45"/>
-    </g>
-  </svg>
+    <a class="navbar-brand d-flex align-items-center gap-3"
+       href="${pageContext.request.contextPath}/">
 
-  <!-- DIZERES (MESMOS DO FOOTER) -->
-  <span class="navbar-text d-none d-lg-inline" style="color: #A7D7B5; font-weight: 600;">
-  Controle operacional da sua oficina
-  <span class="mx-2">•</span>
-  <b><c:out value="${sessionScope.EMPRESA_NOME != null ? sessionScope.EMPRESA_NOME : 'Empresa não selecionada'}"/></b>
-</span>
+      <!-- LOGO JWAY -->
+      <svg width="160" height="46" viewBox="0 0 220 64" fill="none"
+           xmlns="http://www.w3.org/2000/svg" style="display:block">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="220" y2="64" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0F7A36"/>
+            <stop offset="1" stop-color="#16A34A"/>
+          </linearGradient>
+        </defs>
+        <g>
+          <path d="M24 46C34.5 46 44 36.5 44 26C44 15.5 34.5 6 24 6C13.5 6 4 15.5 4 26C4 36.5 13.5 46 24 46Z" fill="url(#g)"/>
+          <path d="M16 26L22 32L33 19" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g>
+          <text x="58" y="41" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#0B3D1D">J</text>
+          <text x="78" y="41" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#16A34A">way</text>
+          <rect x="58" y="48" width="130" height="4" rx="2" fill="#16A34A" opacity="0.45"/>
+        </g>
+      </svg>
 
-  <!-- versão curta em telas menores -->
-  <span class="d-inline d-lg-none" style="color:#A7D7B5; font-weight:600;">
-    TorqueOS
-  </span>
+      <!-- DIZERES (MESMOS DO FOOTER) -->
+      <span class="navbar-text d-none d-lg-inline" style="color: #A7D7B5; font-weight: 600;">
+        Controle operacional da sua oficina
+        <span class="mx-2">•</span>
+        <b>
+          <c:out value="${sessionScope.EMPRESA_NOME != null ? sessionScope.EMPRESA_NOME : 'Empresa não selecionada'}"/>
+        </b>
+      </span>
 
-</a>
+      <!-- versão curta em telas menores -->
+      <span class="d-inline d-lg-none" style="color:#A7D7B5; font-weight:600;">
+        TorqueOS
+      </span>
 
+    </a>
 
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarTorque" aria-controls="navbarTorque"
+            aria-expanded="false" aria-label="Menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
+    <div class="collapse navbar-collapse" id="navbarTorque">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-1">
 
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-			data-bs-target="#navbarTorque" aria-controls="navbarTorque"
-			aria-expanded="false" aria-label="Menu">
-			<span class="navbar-toggler-icon"></span>
-		</button>
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/agendamentos">Agendamentos</a>
+        </li>
 
-		<div class="collapse navbar-collapse" id="navbarTorque">
-			<ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-1">
-			<li class="nav-item">
-			<a class="nav-link" href="${pageContext.request.contextPath}/agendamentos">Agendamentos</a>
-			</li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/ordens">Orçamento/OS</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/clientes">Clientes</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/veiculos">Veículos</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/pecas">Peças/Produtos</a></li>
-				<li class="nav-item"><a class="nav-link"
-					href="${pageContext.request.contextPath}/servicos">Serviços</a></li>
-					<li class="nav-item">
-  <a class="nav-link" href="${pageContext.request.contextPath}/tecnicos">Técnicos</a>
-</li>
-				
-				<li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/recebimentos">Recebimentos</a>
-</li>
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/ordens">Orçamento/OS</a>
+        </li>
 
-				<c:if test="${sessionScope.ROLE == 'SUPERADMIN'}">
-					<li class="nav-item"><a class="nav-link"
-						href="${pageContext.request.contextPath}/admin/empresas">Empresas</a></li>
-				</c:if>
-				<c:if
-					test="${sessionScope.ROLE == 'ADMIN' || sessionScope.ROLE == 'SUPERADMIN'}">
-					<li class="nav-item"><a class="nav-link"
-						href="${pageContext.request.contextPath}/usuarios">Usuários</a></li>
-					<li class="nav-item"><a class="nav-link"
-						href="${pageContext.request.contextPath}/planos">Planos</a></li>
-				</c:if>
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/clientes">Clientes</a>
+        </li>
 
-				<li class="nav-item dropdown"><a
-					class="nav-link dropdown-toggle" href="#" role="button"
-					data-bs-toggle="dropdown" aria-expanded="false"> <c:out
-							value="${sessionScope.USER_NOME}" /> (<c:out
-							value="${sessionScope.ROLE}" />)
-				</a>
-					<ul class="dropdown-menu dropdown-menu-end">
-						<li><span class="dropdown-item-text">Empresa: <b><c:out
-										value="${sessionScope.EMPRESA_ID != null ? sessionScope.EMPRESA_ID : '(não selecionada)'}" /></b></span></li>
-						<li><hr class="dropdown-divider" /></li>
-						<li><a class="dropdown-item"
-							href="${pageContext.request.contextPath}/auth/logout">Sair</a></li>
-					</ul></li>
-			</ul>
-		</div>
-	</div>
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/veiculos">Veículos</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/pecas">Peças/Produtos</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/servicos">Serviços</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/tecnicos">Técnicos</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="${pageContext.request.contextPath}/recebimentos">Recebimentos</a>
+        </li>
+
+        <!-- SUPERADMIN -->
+        <c:if test="${sessionScope.ROLE == 'SUPERADMIN'}">
+          <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/admin/empresas">Empresas</a>
+          </li>
+        </c:if>
+
+        <!-- ADMIN / SUPERADMIN -->
+        <c:if test="${sessionScope.ROLE == 'ADMIN' || sessionScope.ROLE == 'SUPERADMIN'}">
+          <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/usuarios">Usuários</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="${pageContext.request.contextPath}/planos">Planos</a>
+          </li>
+        </c:if>
+
+        <!-- MENU USUÁRIO -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <c:out value="${sessionScope.USER_NOME}" />
+            (<c:out value="${sessionScope.ROLE}" />)
+          </a>
+
+          <ul class="dropdown-menu dropdown-menu-end">
+
+            <li>
+              <span class="dropdown-item-text">
+                Empresa:
+                <b>
+                  <c:out value="${sessionScope.EMPRESA_ID != null ? sessionScope.EMPRESA_ID : '(não selecionada)'}" />
+                </b>
+              </span>
+            </li>
+
+            <!-- NOVO: cadastro/edição da empresa do tenant (sem criar) -->
+            <li>
+              <a class="dropdown-item" href="${pageContext.request.contextPath}/empresa">
+                Minha Empresa
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider" /></li>
+
+            <li>
+              <a class="dropdown-item" href="${pageContext.request.contextPath}/auth/logout">Sair</a>
+            </li>
+
+          </ul>
+        </li>
+
+      </ul>
+    </div>
+  </div>
 </nav>

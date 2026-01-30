@@ -6,12 +6,19 @@
 <head>
   <title>TorqueOS</title>
   <%@ include file="/WEB-INF/views/fragments/head.jspf"%>
+
+  <style>
+    /* Compactação: menos altura e menos espaços */
+    .compact-label { margin-bottom: 4px; }
+    .mb-compact { margin-bottom: .75rem !important; }
+    .table-sm td, .table-sm th { padding-top: .35rem; padding-bottom: .35rem; }
+  </style>
 </head>
 
 <body>
   <%@ include file="/WEB-INF/views/fragments/header.jspf"%>
 
-  <div class="container py-4">
+  <div class="container py-3">
     <div class="card app-card">
       <div class="card-body">
 
@@ -23,63 +30,61 @@
 
           <form:hidden path="idOs" />
 
-          <!-- Cliente -->
-          <div class="mb-3">
-            <label class="form-label">Cliente</label>
-            <select class="form-select" name="clienteId">
-              <option value="">-- selecione --</option>
-              <c:forEach var="c" items="${clientes}">
-                <option value="${c.idCliente}"
-                        <c:if test="${ordem.cliente != null && ordem.cliente.idCliente == c.idCliente}">selected</c:if>>
-                  ${c.nome}
-                </option>
-              </c:forEach>
-            </select>
+          <!-- ===== Linha compacta: Cliente + Veículo + Status (mesma linha no desktop) ===== -->
+          <div class="row g-2 align-items-end mb-compact">
+
+            <!-- Cliente (mais compacto) -->
+            <div class="col-12 col-lg-5">
+              <label class="form-label compact-label">Cliente</label>
+              <select class="form-select form-select-sm" name="clienteId">
+                <option value="">-- selecione --</option>
+                <c:forEach var="c" items="${clientes}">
+                  <option value="${c.idCliente}"
+                          <c:if test="${ordem.cliente != null && ordem.cliente.idCliente == c.idCliente}">selected</c:if>>
+                    ${c.nome}
+                  </option>
+                </c:forEach>
+              </select>
+            </div>
+
+            <!-- Veículo (mais compacto) -->
+            <div class="col-12 col-lg-5">
+              <label class="form-label compact-label">Veículo</label>
+              <select class="form-select form-select-sm" name="veiculoId">
+                <option value="">-- selecione --</option>
+                <c:forEach var="v" items="${veiculos}">
+                  <option value="${v.idVeiculo}"
+                          <c:if test="${ordem.veiculo != null && ordem.veiculo.idVeiculo == v.idVeiculo}">selected</c:if>>
+                    ${v.placa} - ${v.modelo}
+                  </option>
+                </c:forEach>
+              </select>
+            </div>
+
+            <!-- Status (mais estreito) -->
+            <div class="col-12 col-lg-2">
+              <label class="form-label compact-label">Status</label>
+              <form:select path="status" cssClass="form-select form-select-sm" required="required">
+                <form:option value="">--</form:option>
+                <form:option value="EM_ANDAMENTO">Em andamento</form:option>
+                <form:option value="SUSPENSA">Suspensa</form:option>
+                <form:option value="NAO_AUTORIZADA">Não autorizada</form:option>
+                <form:option value="CONCLUIDA">Concluída</form:option>
+              </form:select>
+            </div>
+
           </div>
 
-          <!-- Veículo -->
-          <div class="mb-3">
-            <label class="form-label">Veículo</label>
-            <select class="form-select" name="veiculoId">
-              <option value="">-- selecione --</option>
-              <c:forEach var="v" items="${veiculos}">
-                <option value="${v.idVeiculo}"
-                        <c:if test="${ordem.veiculo != null && ordem.veiculo.idVeiculo == v.idVeiculo}">selected</c:if>>
-                  ${v.placa} - ${v.modelo}
-                </option>
-              </c:forEach>
-            </select>
+          <!-- Observações (menos linhas + maxlength) -->
+          <div class="mb-compact">
+            <label class="form-label compact-label">Observações</label>
+            <!-- TROQUE 500 pelo tamanho real do @Column(length=...) no seu banco -->
+            <form:textarea path="observacoes" cssClass="form-control form-control-sm" rows="2" maxlength="500" />
           </div>
 
-          <!-- Status -->
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <form:select path="status" cssClass="form-select" required="required">
-              <form:option value="">-- selecione --</form:option>
-              <form:option value="EM_ANDAMENTO">Em andamento</form:option>
-              <form:option value="SUSPENSA">Suspensa</form:option>
-              <form:option value="NAO_AUTORIZADA">Não autorizada</form:option>
-              <form:option value="CONCLUIDA">Concluída</form:option>
-            </form:select>
-          </div>
+          <hr class="my-3" />
 
-          <!-- Observações -->
-          <div class="mb-3">
-            <label class="form-label">Observações</label>
-            <form:textarea path="observacoes" cssClass="form-control" rows="4" />
-          </div>
-
-          <hr class="my-4" />
-
-          <!-- ===================== TÉCNICOS (NOVO) ===================== -->
-
-          <h5 class="mb-2">Técnicos</h5>
-
-          <div class="small text-muted mb-2">
-            Selecione os técnicos que atuarão nesta OS. Você pode definir o papel e o percentual de comissão por OS.
-            Se deixar o percentual em branco, o sistema usará o percentual padrão do técnico (se configurado).
-            Linhas sem técnico selecionado não serão enviadas.
-          </div>
+          <!-- ===================== TÉCNICOS ===================== -->
 
           <div class="table-responsive">
             <table class="table table-sm table-striped align-middle">
@@ -98,7 +103,7 @@
                   <c:forEach var="tlink" items="${tecnicosOs}">
                     <tr class="tecnico-row">
                       <td>
-                        <select class="form-select" name="tecnicoId" onchange="toggleTecnicoRow(this)">
+                        <select class="form-select form-select-sm" name="tecnicoId" onchange="toggleTecnicoRow(this)">
                           <option value="">-- selecione --</option>
                           <c:forEach var="tec" items="${tecnicosCatalogo}">
                             <option value="${tec.idTecnico}"
@@ -116,15 +121,14 @@
                       </td>
 
                       <td>
-                        <select class="form-select" name="tecnicoPapel">
+                        <select class="form-select form-select-sm" name="tecnicoPapel">
                           <option value="MECANICO" <c:if test="${tlink.papel == 'MECANICO'}">selected</c:if>>MECÂNICO</option>
                           <option value="AUXILIAR" <c:if test="${tlink.papel == 'AUXILIAR'}">selected</c:if>>AUXILIAR</option>
                         </select>
                       </td>
 
                       <td>
-                        <!-- CORREÇÃO: o campo no vínculo é "percentual" (OrdemServicoTecnico) -->
-                        <input class="form-control" type="number" min="0" max="100"
+                        <input class="form-control form-control-sm" type="number" min="0" max="100"
                                name="tecnicoPercentual"
                                value="${tlink.percentual != null ? tlink.percentual : ''}"
                                placeholder="0..100" />
@@ -142,7 +146,7 @@
                 <c:otherwise>
                   <tr class="tecnico-row">
                     <td>
-                      <select class="form-select" name="tecnicoId" onchange="toggleTecnicoRow(this)">
+                      <select class="form-select form-select-sm" name="tecnicoId" onchange="toggleTecnicoRow(this)">
                         <option value="">-- selecione --</option>
                         <c:forEach var="tec" items="${tecnicosCatalogo}">
                           <option value="${tec.idTecnico}">${tec.nome} (${tec.tipo})</option>
@@ -151,14 +155,14 @@
                     </td>
 
                     <td>
-                      <select class="form-select" name="tecnicoPapel" disabled>
+                      <select class="form-select form-select-sm" name="tecnicoPapel" disabled>
                         <option value="MECANICO">MECÂNICO</option>
                         <option value="AUXILIAR">AUXILIAR</option>
                       </select>
                     </td>
 
                     <td>
-                      <input class="form-control" type="number" min="0" max="100"
+                      <input class="form-control form-control-sm" type="number" min="0" max="100"
                              name="tecnicoPercentual" value=""
                              placeholder="0..100"
                              disabled />
@@ -180,7 +184,7 @@
             + Adicionar técnico
           </button>
 
-          <hr class="my-4" />
+          <hr class="my-3" />
 
           <!-- ===================== SERVIÇOS (CATÁLOGO) ===================== -->
 
@@ -199,7 +203,7 @@
                   <c:forEach var="s" items="${servicosOs}">
                     <tr>
                       <td>
-                        <select class="form-select" name="servicoId">
+                        <select class="form-select form-select-sm" name="servicoId">
                           <option value="">-- selecione --</option>
                           <c:forEach var="cat" items="${servicosCatalogo}">
                             <option value="${cat.idServico}"
@@ -211,12 +215,6 @@
                             </option>
                           </c:forEach>
                         </select>
-
-                        <c:if test="${s.descricao != null}">
-                          <div class="small text-muted mt-1">
-                            Item gravado na OS: ${s.descricao} (R$ ${s.valor})
-                          </div>
-                        </c:if>
                       </td>
 
                       <td>
@@ -231,7 +229,7 @@
                 <c:otherwise>
                   <tr>
                     <td>
-                      <select class="form-select" name="servicoId">
+                      <select class="form-select form-select-sm" name="servicoId">
                         <option value="">-- selecione --</option>
                         <c:forEach var="cat" items="${servicosCatalogo}">
                           <option value="${cat.idServico}">
@@ -256,7 +254,7 @@
             + Adicionar serviço
           </button>
 
-          <hr class="my-4" />
+          <hr class="my-3" />
 
           <!-- ===================== PEÇAS (CATÁLOGO) ===================== -->
 
@@ -276,7 +274,7 @@
                   <c:forEach var="p" items="${pecasOs}">
                     <tr>
                       <td>
-                        <select class="form-select" name="pecaId">
+                        <select class="form-select form-select-sm" name="pecaId">
                           <option value="">-- selecione --</option>
                           <c:forEach var="cat" items="${pecasCatalogo}">
                             <option value="${cat.idPeca}"
@@ -288,16 +286,10 @@
                             </option>
                           </c:forEach>
                         </select>
-
-                        <c:if test="${p.descricao != null}">
-                          <div class="small text-muted mt-1">
-                            Item gravado na OS: ${p.descricao} (Qtd ${p.quantidade}, R$ ${p.valorUnitario})
-                          </div>
-                        </c:if>
                       </td>
 
                       <td>
-                        <input class="form-control" type="number" min="1"
+                        <input class="form-control form-control-sm" type="number" min="1"
                                name="pecaQuantidade"
                                value="${p.quantidade != null ? p.quantidade : 1}" />
                       </td>
@@ -314,7 +306,7 @@
                 <c:otherwise>
                   <tr>
                     <td>
-                      <select class="form-select" name="pecaId">
+                      <select class="form-select form-select-sm" name="pecaId">
                         <option value="">-- selecione --</option>
                         <c:forEach var="cat" items="${pecasCatalogo}">
                           <option value="${cat.idPeca}">
@@ -324,7 +316,7 @@
                       </select>
                     </td>
                     <td>
-                      <input class="form-control" type="number" min="1" name="pecaQuantidade" value="1" />
+                      <input class="form-control form-control-sm" type="number" min="1" name="pecaQuantidade" value="1" />
                     </td>
                     <td>
                       <button type="button"
@@ -342,14 +334,14 @@
             + Adicionar peça
           </button>
 
-          <hr class="my-4" />
+          <hr class="my-3" />
 
           <!-- Botões -->
           <div class="d-flex gap-2 mt-3">
             <button type="submit" class="btn btn-primary">Salvar</button>
             <a class="btn btn-outline-secondary"
                href="${pageContext.request.contextPath}/ordens">Voltar</a>
-          </div>
+         
 
           <c:if test="${ordem.idOs != null}">
             <a class="btn btn-outline-primary mt-2"
@@ -358,6 +350,7 @@
               Gerar Orçamento/OS em PDF
             </a>
           </c:if>
+		  </div>
 
           <script>
             function toggleTecnicoRow(selectEl) {
@@ -369,7 +362,6 @@
               const papel = tr.querySelector('select[name="tecnicoPapel"]');
               const pct = tr.querySelector('input[name="tecnicoPercentual"]');
 
-              // Evita listas desalinhadas: só envia papel/pct quando técnico foi escolhido
               if (papel) papel.disabled = !hasTecnico;
               if (pct) pct.disabled = !hasTecnico;
 
@@ -390,7 +382,7 @@
               tr.className = 'tecnico-row';
               tr.innerHTML =
                 `<td>
-                   <select class="form-select" name="tecnicoId" onchange="toggleTecnicoRow(this)">
+                   <select class="form-select form-select-sm" name="tecnicoId" onchange="toggleTecnicoRow(this)">
                      <option value="">-- selecione --</option>
                      <c:forEach var="tec" items="${tecnicosCatalogo}">
                        <option value="${tec.idTecnico}">${tec.nome} (${tec.tipo})</option>
@@ -398,13 +390,13 @@
                    </select>
                  </td>
                  <td>
-                   <select class="form-select" name="tecnicoPapel" disabled>
+                   <select class="form-select form-select-sm" name="tecnicoPapel" disabled>
                      <option value="MECANICO">MECÂNICO</option>
                      <option value="AUXILIAR">AUXILIAR</option>
                    </select>
                  </td>
                  <td>
-                   <input class="form-control" type="number" min="0" max="100"
+                   <input class="form-control form-control-sm" type="number" min="0" max="100"
                           name="tecnicoPercentual" value=""
                           placeholder="0..100"
                           disabled />
@@ -424,7 +416,7 @@
               const tr = document.createElement('tr');
               tr.innerHTML =
                 `<td>
-                   <select class="form-select" name="servicoId">
+                   <select class="form-select form-select-sm" name="servicoId">
                      <option value="">-- selecione --</option>
                      <c:forEach var="cat" items="${servicosCatalogo}">
                        <option value="${cat.idServico}">${cat.nome} - R$ ${cat.valor}</option>
@@ -443,7 +435,7 @@
               const tr = document.createElement('tr');
               tr.innerHTML =
                 `<td>
-                   <select class="form-select" name="pecaId">
+                   <select class="form-select form-select-sm" name="pecaId">
                      <option value="">-- selecione --</option>
                      <c:forEach var="cat" items="${pecasCatalogo}">
                        <option value="${cat.idPeca}">${cat.nome} - R$ ${cat.valorUnitario}</option>
@@ -451,7 +443,7 @@
                    </select>
                  </td>
                  <td>
-                   <input class="form-control" type="number" min="1"
+                   <input class="form-control form-control-sm" type="number" min="1"
                           name="pecaQuantidade" value="1"/>
                  </td>
                  <td>
@@ -461,7 +453,6 @@
               tb.appendChild(tr);
             }
 
-            // Ajusta linhas carregadas no edit (se por acaso vierem vazias)
             document.addEventListener('DOMContentLoaded', function() {
               document.querySelectorAll('#tbodyTecnicos select[name="tecnicoId"]').forEach(toggleTecnicoRow);
             });
