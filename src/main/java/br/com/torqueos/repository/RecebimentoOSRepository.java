@@ -20,4 +20,9 @@ public interface RecebimentoOSRepository extends JpaRepository<RecebimentoOS, Lo
   List<RecebimentoOS> findByIdEmpresaAndOrdemServico_IdOsOrderByCriadoEmDesc(Long idEmpresa, Long idOs);
 
   void deleteByIdRecebimentoAndIdEmpresa(Long idRecebimento, Long idEmpresa);
+  
+  
+
+  List<RecebimentoOS> findByIdEmpresaAndStatusIgnoreCase(Long idEmpresa, String status);
+
 }

@@ -1,16 +1,19 @@
 package br.com.torqueos.controller;
 
 import br.com.torqueos.model.OrdemServico;
+import br.com.torqueos.model.RecebimentoOS;
 import br.com.torqueos.service.*;
 import br.com.torqueos.util.PdfOrdemServicoGenerator;
 
-import java.util.Collections;
-import java.util.List;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/ordens")
@@ -23,6 +26,11 @@ public class OrdemServicoController {
   private final PecaOSService pecaOSService;
   private final PecaService pecaService;
   private final ServicoService servicoService;
+  private final RecebimentoOSService recebimentoOSService;
+
+  // ✅ técnicos
+  private final TecnicoService tecnicoService;
+  private final OrdemServicoTecnicoService osTecnicoService;
 
   public OrdemServicoController(OrdemServicoService ordemServicoService,
                                 ClienteService clienteService,
@@ -30,7 +38,10 @@ public class OrdemServicoController {
                                 ServicoOSService servicoOSService,
                                 PecaOSService pecaOSService,
                                 PecaService pecaService,
-                                ServicoService servicoService) {
+                                ServicoService servicoService,
+                                RecebimentoOSService recebimentoOSService,
+                                TecnicoService tecnicoService,
+                                OrdemServicoTecnicoService osTecnicoService) {
     this.ordemServicoService = ordemServicoService;
     this.clienteService = clienteService;
     this.veiculoService = veiculoService;
@@ -38,28 +49,30 @@ public class OrdemServicoController {
     this.pecaOSService = pecaOSService;
     this.pecaService = pecaService;
     this.servicoService = servicoService;
+    this.recebimentoOSService = recebimentoOSService;
+
+    this.tecnicoService = tecnicoService;
+    this.osTecnicoService = osTecnicoService;
   }
 
   @GetMapping
   public String list(Model model) {
-    model.addAttribute("ordens", ordemServicoService.findAll());
+    List<OrdemServico> ordens = ordemServicoService.findAll();
+
+    // Descobre quais OS estão pagas
+    Set<Long> osPagas = new HashSet<>();
+    List<RecebimentoOS> recebimentosPagos = recebimentoOSService.listarPagosDaEmpresa();
+    if (recebimentosPagos != null) {
+      for (RecebimentoOS r : recebimentosPagos) {
+        if (r.getOrdemServico() != null && r.getOrdemServico().getIdOs() != null) {
+          osPagas.add(r.getOrdemServico().getIdOs());
+        }
+      }
+    }
+
+    model.addAttribute("ordens", ordens);
+    model.addAttribute("osPagas", osPagas);
     return "ordem/list";
-  }
-
-  @GetMapping("/nova")
-  public String nova(Model model) {
-    model.addAttribute("ordem", new OrdemServico());
-
-    model.addAttribute("clientes", clienteService.findAll());
-    model.addAttribute("veiculos", veiculoService.findAll());
-
-    model.addAttribute("servicosOs", Collections.emptyList());
-    model.addAttribute("pecasOs", Collections.emptyList());
-
-    model.addAttribute("servicosCatalogo", servicoService.listAtivosDaEmpresa());
-    model.addAttribute("pecasCatalogo", pecaService.listAtivosDaEmpresa());
-
-    return "ordem/form";
   }
 
   @PostMapping("/salvar")
@@ -68,33 +81,22 @@ public class OrdemServicoController {
                        @RequestParam(value = "veiculoId", required = false) Long veiculoId,
                        @RequestParam(value = "servicoId", required = false) List<Long> servicoId,
                        @RequestParam(value = "pecaId", required = false) List<Long> pecaId,
-                       @RequestParam(value = "pecaQuantidade", required = false) List<Integer> pecaQuantidade) {
+                       @RequestParam(value = "pecaQuantidade", required = false) List<Integer> pecaQuantidade,
+
+                       // ===== NOVO: técnicos =====
+                       @RequestParam(value = "tecnicoId", required = false) List<Long> tecnicoId,
+                       @RequestParam(value = "tecnicoPapel", required = false) List<String> tecnicoPapel,
+                       @RequestParam(value = "tecnicoPercentual", required = false) List<Integer> tecnicoPercentual) {
 
     if (ordem.getIdOs() == null) {
-      ordemServicoService.create(ordem, clienteId, veiculoId, servicoId, pecaId, pecaQuantidade);
+      ordemServicoService.create(ordem, clienteId, veiculoId, servicoId, pecaId, pecaQuantidade,
+          tecnicoId, tecnicoPapel, tecnicoPercentual);
     } else {
-      ordemServicoService.update(ordem.getIdOs(), ordem, clienteId, veiculoId, servicoId, pecaId, pecaQuantidade);
+      ordemServicoService.update(ordem.getIdOs(), ordem, clienteId, veiculoId, servicoId, pecaId, pecaQuantidade,
+          tecnicoId, tecnicoPapel, tecnicoPercentual);
     }
 
     return "redirect:/ordens";
-  }
-
-  @GetMapping("/editar/{id}")
-  public String editar(@PathVariable Long id, Model model) {
-    OrdemServico os = ordemServicoService.findById(id);
-
-    model.addAttribute("ordem", os);
-
-    model.addAttribute("clientes", clienteService.findAll());
-    model.addAttribute("veiculos", veiculoService.findAll());
-
-    model.addAttribute("servicosOs", servicoOSService.findByOs(id));
-    model.addAttribute("pecasOs", pecaOSService.findByOs(id));
-
-    model.addAttribute("servicosCatalogo", servicoService.listAtivosDaEmpresa());
-    model.addAttribute("pecasCatalogo", pecaService.listAtivosDaEmpresa());
-
-    return "ordem/form";
   }
 
   @GetMapping("/ver/{id}")
@@ -114,7 +116,7 @@ public class OrdemServicoController {
     ordemServicoService.delete(id);
     return "redirect:/ordens";
   }
-  
+
   @GetMapping("/pdf/{id}")
   public ResponseEntity<byte[]> pdf(@PathVariable Long id) {
     OrdemServico os = ordemServicoService.findById(id);
@@ -127,11 +129,6 @@ public class OrdemServicoController {
     String empresaCnpj = "";
 
     try {
-      // SE você tiver EmpresaService, use aqui (exemplo):
-      // Empresa e = empresaService.findPorIdDaEmpresa(os.getIdEmpresa());  // (ou findById)
-      // empresaNome = e.getNome();
-      // empresaCnpj = e.getCnpj();
-
       // fallback se você ainda não tem service:
       empresaNome = "Empresa #" + os.getIdEmpresa();
     } catch (Exception ex) {
@@ -141,11 +138,6 @@ public class OrdemServicoController {
     String assinaturaLinha1 = "";
     String assinaturaLinha2 = "";
     try {
-      // Se você tiver algo assim no seu AssinaturaService:
-      // Assinatura a = assinaturaService.getAtivaDaEmpresa(os.getIdEmpresa());
-      // assinaturaLinha1 = "Assinatura: " + a.getStatus();
-      // assinaturaLinha2 = "Plano: " + a.getPlano().getNome() + " | Próximo ciclo: " + a.getProximoCiclo();
-
       // fallback:
       assinaturaLinha1 = "Assinatura: ATIVA";
       assinaturaLinha2 = "Plano: (não informado)";
@@ -156,7 +148,6 @@ public class OrdemServicoController {
 
     byte[] pdfBytes = PdfOrdemServicoGenerator.gerar(os, servicos, pecas, empresaNome, empresaCnpj);
 
-
     String filename = "OS-" + id + ".pdf";
     return ResponseEntity.ok()
         .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
@@ -164,4 +155,45 @@ public class OrdemServicoController {
         .body(pdfBytes);
   }
 
+  @GetMapping("/nova")
+  public String nova(Model model) {
+    model.addAttribute("ordem", new OrdemServico());
+
+    model.addAttribute("clientes", clienteService.findAll());
+    model.addAttribute("veiculos", veiculoService.findAll());
+
+    model.addAttribute("servicosOs", Collections.emptyList());
+    model.addAttribute("pecasOs", Collections.emptyList());
+
+    model.addAttribute("servicosCatalogo", servicoService.listAtivosDaEmpresa());
+    model.addAttribute("pecasCatalogo", pecaService.listAtivosDaEmpresa());
+
+    // ✅ técnicos
+    model.addAttribute("tecnicosCatalogo", tecnicoService.listarDaEmpresa());
+    model.addAttribute("tecnicosOs", Collections.emptyList());
+
+    return "ordem/form";
+  }
+
+  @GetMapping("/editar/{id}")
+  public String editar(@PathVariable Long id, Model model) {
+    OrdemServico os = ordemServicoService.findById(id);
+
+    model.addAttribute("ordem", os);
+
+    model.addAttribute("clientes", clienteService.findAll());
+    model.addAttribute("veiculos", veiculoService.findAll());
+
+    model.addAttribute("servicosOs", servicoOSService.findByOs(id));
+    model.addAttribute("pecasOs", pecaOSService.findByOs(id));
+
+    model.addAttribute("servicosCatalogo", servicoService.listAtivosDaEmpresa());
+    model.addAttribute("pecasCatalogo", pecaService.listAtivosDaEmpresa());
+
+    // ✅ técnicos
+    model.addAttribute("tecnicosCatalogo", tecnicoService.listarDaEmpresa());
+    model.addAttribute("tecnicosOs", osTecnicoService.findByOs(id));
+
+    return "ordem/form";
+  }
 }

@@ -185,4 +185,11 @@ public class RecebimentoOSService {
   // aliases
   public List<RecebimentoOS> list() { return listarDaEmpresa(); }
   public RecebimentoOS find(Long id) { return findById(id); }
+  
+  public List<RecebimentoOS> listarPagosDaEmpresa() {
+	  Long emp = TenantContext.getEmpresaId();
+	  if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
+	  return repo.findByIdEmpresaAndStatusIgnoreCase(emp, "PAGO");
+	}
+
 }

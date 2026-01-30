@@ -2,6 +2,8 @@ package br.com.torqueos.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ordens_servico")
@@ -58,4 +60,13 @@ public class OrdemServico {
 
   public String getObservacoes() { return observacoes; }
   public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
+  
+  
+
+  @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<OrdemServicoTecnico> tecnicos = new ArrayList<>();
+
+  public List<OrdemServicoTecnico> getTecnicos() { return tecnicos; }
+  public void setTecnicos(List<OrdemServicoTecnico> tecnicos) { this.tecnicos = tecnicos; }
+
 }
