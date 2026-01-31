@@ -36,7 +36,7 @@
       <!-- TEXTO -->
       <div class="text-center text-md-start small" style="line-height:1.4;">
         <<span class="navbar-text d-none d-lg-inline" style="color: #A7D7B5; font-weight: 600;">
-  Controle operacional da sua oficina
+  TorqueOs
   <span class="mx-2">•</span>
   <b><c:out value="${sessionScope.EMPRESA_NOME != null ? sessionScope.EMPRESA_NOME : 'Empresa não selecionada'}"/></b>
 </span>

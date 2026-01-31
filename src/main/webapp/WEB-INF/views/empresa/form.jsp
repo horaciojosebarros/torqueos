@@ -31,7 +31,7 @@
 
             <div class="col-12 col-md-8">
               <label class="form-label">Nome</label>
-              <form:input path="nome" cssClass="form-control" maxlength="120" required="required"/>
+              <form:input path="nome" cssClass="form-control" maxlength="60" required="required"/>
               <div class="invalid-feedback">Informe o nome da empresa.</div>
             </div>
 

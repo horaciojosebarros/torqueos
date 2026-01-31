@@ -98,6 +98,38 @@ public class OrdemServicoService {
 		return os;
 	}
 
+	/**
+	 * NOVO: conclui a OS (status = CONCLUIDA) de forma segura no tenant.
+	 * - Se a OS já estiver CONCLUIDA, não faz nada.
+	 * - Tenta setar dataFinalizacao se existir na entidade (sem quebrar se não existir).
+	 *
+	 * Uso típico: após cadastrar/atualizar um recebimento marcado como PAGO.
+	 */
+	@Transactional
+	public void concluirOs(Long idOs) {
+		if (idOs == null) throw new RuntimeException("OS inválida");
+		assinaturaService.validarAssinaturaAtiva();
+
+		OrdemServico os = findPorIdDaEmpresa(idOs);
+
+		if ("CONCLUIDA".equalsIgnoreCase(os.getStatus())) {
+			return;
+		}
+
+		os.setStatus("CONCLUIDA");
+
+		// tenta preencher dataFinalizacao, se o campo existir
+		try {
+			os.getClass()
+			  .getMethod("setDataFinalizacao", LocalDateTime.class)
+			  .invoke(os, LocalDateTime.now());
+		} catch (Exception ignore) {
+			// se a entidade não tiver esse setter/campo, segue sem erro
+		}
+
+		ordemRepo.save(os);
+	}
+
 	@Transactional
 	public void delete(Long idOs) {
 		assinaturaService.validarAssinaturaAtiva();
@@ -109,7 +141,6 @@ public class OrdemServicoService {
 
 		// remove vínculos de técnicos (por segurança — ON DELETE CASCADE também ajuda)
 		osTecnicoRepo.deleteVinculosDaOs(TenantContext.getEmpresaId(), idOs);
-
 
 		ordemRepo.delete(os);
 	}
@@ -404,7 +435,7 @@ public class OrdemServicoService {
 
 		OrdemServico os = findPorIdDaEmpresa(idOs);
 
-// ✅ Apaga de forma GERENCIADA (evita problemas de bulk delete + contexto do Hibernate)
+		// ✅ Apaga de forma GERENCIADA (evita problemas de bulk delete + contexto do Hibernate)
 		List<OrdemServicoTecnico> atuais = osTecnicoRepo.findByIdEmpresaAndOrdemServico_IdOsOrderByIdOsTecnicoAsc(emp,
 				idOs);
 
@@ -417,7 +448,7 @@ public class OrdemServicoService {
 		if (tecnicoId == null || tecnicoId.isEmpty())
 			return;
 
-// ✅ evita duplicidade vinda do form (mesmo técnico repetido)
+		// ✅ evita duplicidade vinda do form (mesmo técnico repetido)
 		java.util.Set<Long> jaInseridos = new java.util.HashSet<>();
 		LocalDateTime now = LocalDateTime.now();
 
@@ -435,7 +466,7 @@ public class OrdemServicoService {
 			String papel = safeAt(tecnicoPapel, i);
 			papel = (papel == null ? "" : papel.trim().toUpperCase());
 
-// ✅ só MECANICO/AUXILIAR
+			// ✅ só MECANICO/AUXILIAR
 			if (!"MECANICO".equals(papel) && !"AUXILIAR".equals(papel)) {
 				papel = (t.getTipo() != null ? t.getTipo().trim().toUpperCase() : "MECANICO");
 				if (!"MECANICO".equals(papel) && !"AUXILIAR".equals(papel))

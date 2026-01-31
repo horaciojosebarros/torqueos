@@ -35,7 +35,6 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h2 class="mb-0">Recebimentos (Ordens de Serviço)</h2>
-          <div class="text-muted small">Filtros e exportação sem alterar backend (client-side).</div>
         </div>
 
         <div class="d-flex gap-2 no-print">
@@ -209,7 +208,7 @@
 
       <!-- Rodapé de totais (filtrados) -->
       <div class="mt-3 text-muted small">
-        <span class="mono">Dica:</span> use os filtros acima para gerar relatórios e exportar CSV/Excel sem mexer no backend.
+        <span class="mono">Dica:</span> use os filtros acima para gerar relatórios e exportar CSV/Excel.
       </div>
 
     </div>

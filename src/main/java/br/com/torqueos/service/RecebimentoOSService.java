@@ -7,6 +7,7 @@ import br.com.torqueos.model.ServicoOS;
 import br.com.torqueos.repository.RecebimentoOSRepository;
 import br.com.torqueos.tenant.TenantContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -47,6 +48,7 @@ public class RecebimentoOSService {
         .orElseThrow(() -> new RuntimeException("Recebimento não encontrado: " + id));
   }
 
+  @Transactional
   public RecebimentoOS create(RecebimentoOS r, Long osId) {
     assinaturaService.validarAssinaturaAtiva();
 
@@ -67,9 +69,16 @@ public class RecebimentoOSService {
 
     r.setCriadoEm(LocalDateTime.now());
     r.setAtualizadoEm(LocalDateTime.now());
-    return repo.save(r);
+
+    RecebimentoOS salvo = repo.save(r);
+
+    // NOVO: se recebimento ficou PAGO, conclui a OS vinculada
+    concluirOsSePago(salvo);
+
+    return salvo;
   }
 
+  @Transactional
   public RecebimentoOS update(Long id, RecebimentoOS novo, Long osId) {
     assinaturaService.validarAssinaturaAtiva();
 
@@ -109,7 +118,13 @@ public class RecebimentoOSService {
     normalizarStatus(r);
 
     r.setAtualizadoEm(LocalDateTime.now());
-    return repo.save(r);
+
+    RecebimentoOS salvo = repo.save(r);
+
+    // NOVO: se recebimento ficou PAGO, conclui a OS vinculada
+    concluirOsSePago(salvo);
+
+    return salvo;
   }
 
   public void delete(Long id) {
@@ -182,14 +197,45 @@ public class RecebimentoOSService {
 
   private static BigDecimal nz(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
 
+  // ===========================
+  // NOVO: Concluir OS quando receber
+  // ===========================
+
+  private void concluirOsSePago(RecebimentoOS r) {
+    if (r == null) return;
+    if (!isPago(r)) return;
+
+    OrdemServico os = r.getOrdemServico();
+    if (os == null || os.getIdOs() == null) return;
+
+    // garante que está dentro do tenant e traz a entidade gerenciada
+    OrdemServico osDb = ordemServicoService.findById(os.getIdOs());
+
+    // se já está concluída, não faz nada
+    if ("CONCLUIDA".equalsIgnoreCase(osDb.getStatus())) return;
+
+    osDb.setStatus("CONCLUIDA");
+
+    // se existir o campo dataFinalizacao na entidade, tenta setar
+    try {
+      osDb.getClass()
+          .getMethod("setDataFinalizacao", LocalDateTime.class)
+          .invoke(osDb, LocalDateTime.now());
+    } catch (Exception ignore) {
+      // se não tiver esse setter/campo, segue sem quebrar
+    }
+
+    ordemServicoService.concluirOs(osDb.getIdOs());
+  }
+
   // aliases
   public List<RecebimentoOS> list() { return listarDaEmpresa(); }
   public RecebimentoOS find(Long id) { return findById(id); }
-  
+
   public List<RecebimentoOS> listarPagosDaEmpresa() {
-	  Long emp = TenantContext.getEmpresaId();
-	  if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
-	  return repo.findByIdEmpresaAndStatusIgnoreCase(emp, "PAGO");
-	}
+    Long emp = TenantContext.getEmpresaId();
+    if (emp == null) throw new RuntimeException("Tenant não definido (empresaId).");
+    return repo.findByIdEmpresaAndStatusIgnoreCase(emp, "PAGO");
+  }
 
 }

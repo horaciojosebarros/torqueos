@@ -13,10 +13,7 @@
 <div class="page-title mb-3"><h2 class="mb-3">Veículo</h2></div>
 
 <p>
-  <a href="${pageContext.request.contextPath}/veiculos/novo">Novo Veículo</a>
-  <c:if test="${clienteId != null}">
-    | <a href="${pageContext.request.contextPath}/clientes">Voltar ao Cliente</a>
-  </c:if>
+  <a class="btn btn-primary" href="${pageContext.request.contextPath}/veiculos/novo">Novo Veículo</a>
 </p>
 
 <table class="table table-striped table-hover app-table">
